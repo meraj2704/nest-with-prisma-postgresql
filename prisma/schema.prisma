@@ -14,6 +14,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  DEVELOPER
+  TEAM_LEAD
+  MANAGER
+}
+
 model Users {
   user_id    Int      @id @default(autoincrement())
   username   String   @unique
@@ -21,6 +27,7 @@ model Users {
   full_name  String
   phone      String?
   password   String
+  role       UserRole @default(DEVELOPER)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   tasks      Tasks[]
