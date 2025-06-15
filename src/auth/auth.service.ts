@@ -116,4 +116,44 @@ export class AuthService {
       throw new UnauthorizedException('Invalid token');
     }
   }
+
+  async changePassword(changePasswordDto: {
+    email: string;
+    currentPassword: string;
+    newPassword: string;
+  }) {
+    // const user = await this.validateUser(
+    //   changePasswordDto.email,
+    //   changePasswordDto.currentPassword,
+    // );
+
+    const user = await this.prisma.users.findUnique({
+      where: { email: changePasswordDto.email },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const passwordMatch = await bcrypt.compare(
+      changePasswordDto.currentPassword,
+      user.password,
+    );
+    if (!passwordMatch) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(
+      changePasswordDto.newPassword,
+      10,
+    );
+    await this.prisma.users.update({
+      where: { email: changePasswordDto.email },
+      data: { password: hashedNewPassword },
+    });
+
+    return {
+      message: 'Password changed successfully',
+    };
+  }
 }
