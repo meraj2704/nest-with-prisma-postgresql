@@ -20,6 +20,19 @@ enum UserRole {
   MANAGER
 }
 
+enum ProjectType {
+  FRONTEND
+  BACKEND
+  DATABASE
+  FULLSTACK
+}
+
+enum PRIORITY {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 model Users {
   user_id    Int      @id @default(autoincrement())
   username   String   @unique
@@ -34,8 +47,11 @@ model Users {
 }
 
 model Projects {
-  project_id   Int     @id @default(autoincrement())
+  project_id   Int         @id @default(autoincrement())
   project_name String
+  description  String
+  type         ProjectType @default(FRONTEND)
+  priority     PRIORITY    @default(LOW)
   tasks        Tasks[]
 }
 
