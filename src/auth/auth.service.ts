@@ -17,7 +17,7 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.prisma.users.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({ where: { email } });
     if (user && (await bcrypt.compare(password, user.password))) {
       // Exclude password from the returned user object
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -44,7 +44,7 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto) {
-    const existingUser = await this.prisma.users.findFirst({
+    const existingUser = await this.prisma.user.findFirst({
       where: {
         OR: [{ email: registerDto.email }, { username: registerDto.username }],
       },
@@ -60,10 +60,10 @@ export class AuthService {
       }
     }
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    const user = await this.prisma.users.create({
+    const user = await this.prisma.user.create({
       data: {
         username: registerDto.username,
-        full_name: registerDto.full_name,
+        fullName: registerDto.full_name,
         email: registerDto.email,
         phone: registerDto.phone,
         password: hashedPassword,
@@ -95,8 +95,8 @@ export class AuthService {
     try {
       const decoded = this.jwtService.verify(token);
       console.log('decoded', decoded);
-      const user = await this.prisma.users.findUnique({
-        where: { user_id: decoded.sub },
+      const user = await this.prisma.user.findUnique({
+        where: { id: decoded.sub },
       });
       console.log('user', user);
       if (!user) {
@@ -127,7 +127,7 @@ export class AuthService {
     //   changePasswordDto.currentPassword,
     // );
 
-    const user = await this.prisma.users.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { email: changePasswordDto.email },
     });
 
@@ -147,7 +147,7 @@ export class AuthService {
       changePasswordDto.newPassword,
       10,
     );
-    await this.prisma.users.update({
+    await this.prisma.user.update({
       where: { email: changePasswordDto.email },
       data: { password: hashedNewPassword },
     });

@@ -9,16 +9,16 @@ export class UsersService {
   ) {}
 
   async findAll() {
-    const users = await this.prisma.users.findMany({
+    const users = await this.prisma.user.findMany({
       select: {
-        user_id: true,
+        id: true,
         username: true,
-        full_name: true,
+        fullName: true,
         phone: true,
         role: true,
         email: true,
-        created_at: true,
-        updated_at: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
     return {
@@ -28,17 +28,17 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    const user = await this.prisma.users.findUnique({
-      where: { user_id: id },
+    const user = await this.prisma.user.findUnique({
+      where: { id: id },
       select: {
-        user_id: true,
+        id: true,
         username: true,
-        full_name: true,
+        fullName: true,
         phone: true,
         role: true,
         email: true,
-        created_at: true,
-        updated_at: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
     return {
@@ -48,8 +48,8 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.prisma.users.update({
-      where: { user_id: id },
+    const user = await this.prisma.user.update({
+      where: { id: id },
       data: updateUserDto,
     });
     return {
@@ -59,8 +59,8 @@ export class UsersService {
   }
 
   async remove(id: number) {
-    await this.prisma.users.delete({
-      where: { user_id: id },
+    await this.prisma.user.delete({
+      where: { id: id },
     });
     return {
       message: 'User removed successfully',

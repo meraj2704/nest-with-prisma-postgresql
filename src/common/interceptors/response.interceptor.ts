@@ -19,8 +19,8 @@ export class ResponseInterceptor implements NestInterceptor {
         if (data?.meta) {
           return {
             success: true,
-            data: data.data || data.items || data.result,
             message: data.message,
+            data: data.data || data.items || data.result,
             timestamp: now,
             meta: data.meta,
           };
@@ -29,8 +29,8 @@ export class ResponseInterceptor implements NestInterceptor {
         // Handle normal responses
         return {
           success: true,
-          data: data?.data || data,
           message: data?.message,
+          data: data?.data || data,
           timestamp: now,
           meta: data?.meta,
         };
