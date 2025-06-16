@@ -7,6 +7,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ModuleService {
   constructor(private prisma: PrismaService) {}
   async create(createModuleDto: CreateModuleDto) {
+    const projectExist = await this.prisma.project.findUnique({
+      where: { id: createModuleDto.projectId },
+    });
+    if (!projectExist) {
+      throw new NotFoundException(
+        `Project with ID ${createModuleDto.projectId} not found`,
+      );
+    }
     const module = await this.prisma.module.create({ data: createModuleDto });
     return {
       message: 'Module successfully created',

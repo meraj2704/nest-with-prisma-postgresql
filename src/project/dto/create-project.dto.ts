@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { Priority, ProjectType } from 'generated/prisma';
 
 export class CreateProjectDto {
@@ -13,17 +13,25 @@ export class CreateProjectDto {
   @IsNotEmpty()
   description: string;
 
-  @ApiProperty({ enum: ProjectType, example: ProjectType.FRONTEND })
-  @IsString()
+  @ApiProperty({
+    enum: ProjectType,
+    example: ProjectType.FRONTEND,
+    description: `Project type (${Object.values(ProjectType).join(', ')})`,
+  })
+  @IsEnum(ProjectType, {
+    message: `Invalid project type. Valid values are: ${Object.values(ProjectType).join(', ')}`,
+  })
   @IsNotEmpty()
   type: ProjectType;
 
   @ApiProperty({
     enum: Priority,
     example: Priority.HIGH,
-    description: 'Project priority',
+    description: `Priority level (${Object.values(Priority).join(', ')})`,
   })
-  @IsString()
+  @IsEnum(Priority, {
+    message: `Invalid priority. Valid values are: ${Object.values(Priority).join(', ')}`,
+  })
   @IsNotEmpty()
   priority: Priority;
 }

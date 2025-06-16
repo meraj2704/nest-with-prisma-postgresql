@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -41,6 +41,9 @@ export class UsersService {
         updatedAt: true,
       },
     });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
     return {
       message: 'User retrieved successfully',
       data: user,
