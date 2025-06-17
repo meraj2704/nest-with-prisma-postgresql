@@ -32,16 +32,45 @@ export class ProjectService {
         description: true,
         type: true,
         priority: true,
+        progress: true,
+        _count: {
+          select: {
+            modules: true,
+            tasks: true,
+          },
+        },
       },
     });
     return {
       message: 'Projects successfully retrieved',
-      data: projects,
+      data: projects.map(({ _count, ...project }) => ({
+        ...project,
+        modules: _count.modules,
+        tasks: _count.tasks,
+      })),
     };
   }
 
   async findOne(id: number) {
-    const project = await this.prisma.project.findUnique({ where: { id } });
+    const project = await this.prisma.project.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        type: true,
+        priority: true,
+        progress: true,
+        modules: true,
+        _count: {
+          select: {
+            tasks: true,
+          },
+        },
+      },
+    });
+
+    const complete
     if (!project) {
       throw new NotFoundException(`Project with ID ${id} not found`);
     }

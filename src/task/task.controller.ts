@@ -6,16 +6,21 @@ import {
   Patch,
   Param,
   Delete,
+  HttpStatus,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { EndTaskDto } from './dto/end-task.dto';
 
 @Controller('task')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
+  // *************************************
+  // ******** CREATE TASK API ************
+  // *************************************
   @Post('create')
   @ApiOperation({ summary: 'Create a new task' })
   @ApiBody({ type: CreateTaskDto })
@@ -29,6 +34,9 @@ export class TaskController {
     return this.taskService.create(createTaskDto);
   }
 
+  // *************************************
+  // ********** GET ALL TASK *************
+  // *************************************
   @Get('all')
   @ApiOperation({ summary: 'Retrieve all tasks' })
   @ApiResponse({
@@ -40,6 +48,9 @@ export class TaskController {
     return this.taskService.findAll();
   }
 
+  // *************************************
+  // ******** GET SINGLE TASK ************
+  // *************************************
   @Get(':id')
   @ApiOperation({ summary: 'Retrieve a task by ID' })
   @ApiResponse({
@@ -52,6 +63,9 @@ export class TaskController {
     return this.taskService.findOne(+id);
   }
 
+  // *************************************
+  // *********** UPDATE TASK *************
+  // *************************************
   @Patch('update/:id')
   @ApiOperation({ summary: 'Update a task by ID' })
   @ApiResponse({
@@ -64,11 +78,56 @@ export class TaskController {
     return this.taskService.update(+id, updateTaskDto);
   }
 
+  // *************************************
+  // *********** REMOVE TASK *************
+  // *************************************
   @Delete('remove/:id')
   @ApiOperation({ summary: 'Remove a task by ID' })
   @ApiResponse({ status: 200, description: 'Task successfully removed.' })
   @ApiResponse({ status: 404, description: 'Task not found.' })
   remove(@Param('id') id: string) {
     return this.taskService.remove(+id);
+  }
+
+  // *************************************
+  // ************ START TASK *************
+  // *************************************
+  @Post('start/:id')
+  @ApiOperation({ summary: 'Start task with ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Task successfully started',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Task not exist',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Task already complete',
+  })
+  start(@Param('id') id: number) {
+    return this.taskService.startTask(id);
+  }
+
+  // *************************************
+  // ************ START TASK *************
+  // *************************************
+  @Post('end/:id')
+  @ApiOperation({ summary: 'End task with id' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Task successfully ended',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Task not exist',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Task already complete',
+  })
+  end(@Param('id') id: number, @Body() endTaskDto: EndTaskDto) {
+    return this.taskService.endTask(id, endTaskDto);
   }
 }
