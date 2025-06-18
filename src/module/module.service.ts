@@ -1,3 +1,4 @@
+import { Validator } from './../common/validation/validator.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
@@ -5,16 +6,12 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ModuleService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private validator: Validator,
+  ) {}
   async create(createModuleDto: CreateModuleDto) {
-    const projectExist = await this.prisma.project.findUnique({
-      where: { id: createModuleDto.projectId },
-    });
-    if (!projectExist) {
-      throw new NotFoundException(
-        `Project with ID ${createModuleDto.projectId} not found`,
-      );
-    }
+    await this.validator.validateProjectExists(createModuleDto.projectId);
     const module = await this.prisma.module.create({ data: createModuleDto });
     return {
       message: 'Module successfully created',
@@ -38,6 +35,16 @@ export class ModuleService {
     return {
       message: 'Module found',
       data: module,
+    };
+  }
+  async findByProjectId(id: number) {
+    await this.validator.validateProjectExists(id);
+    const modules = await this.prisma.module.findMany({
+      where: { projectId: id },
+    });
+    return {
+      message: 'Module found',
+      data: modules,
     };
   }
 

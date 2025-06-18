@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  HttpStatus,
 } from '@nestjs/common';
 import { ModuleService } from './module.service';
 import { CreateModuleDto } from './dto/create-module.dto';
@@ -56,6 +57,20 @@ export class ModuleController {
   })
   async findOne(@Param('id') id: string) {
     return await this.moduleService.findOne(+id);
+  }
+
+  @Get('by-project/:id')
+  @ApiOperation({ summary: 'Get a module by Project ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully module fetched by project',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Project not found by this id',
+  })
+  async findByProjectId(@Param('id') id: string) {
+    return await this.moduleService.findByProjectId(+id);
   }
 
   @Patch(':id')
