@@ -11,32 +11,23 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProgressService } from 'src/common/services/progress.service';
 
+import { Validator } from 'src/common/validation/validator.service';
+
 @Injectable()
 export class TaskService {
   constructor(
     private prisma: PrismaService,
     private progressService: ProgressService,
+    private validator: Validator,
   ) {}
   async create(createTaskDto: CreateTaskDto) {
-    const existProject = await this.prisma.project.findUnique({
-      where: { id: createTaskDto.projectId },
-    });
-    if (!existProject) {
-      throw new NotFoundException(
-        `Project with ID ${createTaskDto.projectId} not found`,
-      );
-    }
-    const moduleExist = await this.prisma.module.findUnique({
-      where: { id: createTaskDto.moduleId },
-    });
-    if (!moduleExist) {
-      throw new NotFoundException(
-        `Module with ID ${createTaskDto.moduleId} not found`,
-      );
-    }
-    if (existProject.id !== moduleExist.projectId) {
-      throw new NotFoundException(`Module not exist in Project`);
-    }
+    await this.validator.validateProjectExists(createTaskDto.projectId);
+    await this.validator.validateModuleExists(createTaskDto.moduleId);
+    await this.validator.validateModuleInProject(
+      createTaskDto.moduleId,
+      createTaskDto.projectId,
+    );
+
     const task = await this.prisma.task.create({
       data: createTaskDto,
     });
@@ -64,6 +55,27 @@ export class TaskService {
     return {
       message: 'Task successfully retrieved',
       data: task,
+    };
+  }
+
+  async findByProjectId(id: number) {
+    await this.validator.validateProjectExists(id);
+    const tasks = await this.prisma.task.findMany({
+      where: { projectId: id },
+    });
+    return {
+      message: `Successfully fetch all task by project id ${id}`,
+      data: tasks,
+    };
+  }
+  async findByModuleId(id: number) {
+    await this.validator.validateModuleExists(id);
+    const tasks = await this.prisma.task.findMany({
+      where: { moduleId: id },
+    });
+    return {
+      message: `Successfully fetch all task by module id ${id}`,
+      data: tasks,
     };
   }
 

@@ -63,6 +63,38 @@ export class TaskController {
     return this.taskService.findOne(+id);
   }
 
+  // *********************************************
+  // ******** GET ALL TASK PROJECT ID ************
+  // *********************************************
+  @Get('by-project/:id')
+  @ApiOperation({ summary: 'Retrieve all tasks by Project ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Task successfully retrieved.',
+    type: CreateTaskDto,
+  })
+  @ApiResponse({ status: 404, description: 'Task not found.' })
+  @ApiResponse({ status: 404, description: 'Project not found by id' })
+  findByProjectId(@Param('id') id: string) {
+    return this.taskService.findByProjectId(+id);
+  }
+
+  // *********************************************
+  // ******** GET ALL TASK MODULE ID ************
+  // *********************************************
+  @Get('by-module/:id')
+  @ApiOperation({ summary: 'Retrieve all tasks by Module ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Task successfully retrieved.',
+    type: CreateTaskDto,
+  })
+  @ApiResponse({ status: 404, description: 'Module not found.' })
+  @ApiResponse({ status: 404, description: 'Project not found by id' })
+  findByModuleId(@Param('id') id: string) {
+    return this.taskService.findByModuleId(+id);
+  }
+
   // *************************************
   // *********** UPDATE TASK *************
   // *************************************

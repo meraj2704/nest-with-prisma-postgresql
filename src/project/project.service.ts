@@ -70,7 +70,14 @@ export class ProjectService {
       },
     });
 
-    const complete
+    const completedCounts = await this.prisma.task.groupBy({
+      by: ['projectId'],
+      where: { completed: true },
+      _count: true,
+    });
+
+    console.log('completedCounts', completedCounts);
+
     if (!project) {
       throw new NotFoundException(`Project with ID ${id} not found`);
     }
