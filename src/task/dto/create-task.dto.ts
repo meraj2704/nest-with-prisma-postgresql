@@ -61,12 +61,6 @@ export class CreateTaskDto {
   @IsOptional()
   estimatedHours?: number;
 
-  @ApiProperty({ example: 1, description: 'Project ID' })
-  @IsInt()
-  @IsPositive()
-  @IsNotEmpty()
-  projectId: number;
-
   @ApiProperty({ example: 1, description: 'Module ID' })
   @IsInt()
   @IsPositive()

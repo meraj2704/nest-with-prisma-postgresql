@@ -93,29 +93,51 @@ export class ProjectService {
         type: true,
         priority: true,
         progress: true,
-        modules: true,
-        _count: {
+        tasks: {
           select: {
-            tasks: true,
+            id: true,
+            completed: true,
+          },
+        },
+        modules: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            type: true,
+            priority: true,
+            completed: true,
+            progress: true,
+            tasks: {
+              select: {
+                id: true,
+                completed: true,
+              },
+            },
           },
         },
       },
     });
 
-    const completedCounts = await this.prisma.task.groupBy({
-      by: ['projectId'],
-      where: { completed: true },
-      _count: true,
-    });
-
-    console.log('completedCounts', completedCounts);
-
     if (!project) {
       throw new NotFoundException(`Project with ID ${id} not found`);
     }
+
+    const { tasks, modules, ...othersData } = project;
     return {
       message: 'Project successfully retrieved',
-      data: project,
+      data: {
+        ...othersData,
+        totalTasks: tasks.length,
+        completedTasks: tasks.filter((t) => t.completed).length,
+        totalModule: modules.length,
+        completedModules: modules.filter((m) => m.completed).length,
+        modules: modules.map(({ tasks, ...module }) => ({
+          ...module,
+          totalTask: tasks.length,
+          completedTasks: tasks.filter((m) => m.completed).length,
+        })),
+      },
     };
   }
 

@@ -21,22 +21,24 @@ export class TaskService {
     private validator: Validator,
   ) {}
   async create(createTaskDto: CreateTaskDto) {
-    await this.validator.validateProjectExists(createTaskDto.projectId);
-    await this.validator.validateModuleExists(createTaskDto.moduleId);
-    await this.validator.validateModuleInProject(
+    const moduleExist = await this.validator.validateModuleExists(
       createTaskDto.moduleId,
-      createTaskDto.projectId,
     );
 
+    const newData = {
+      ...createTaskDto,
+      projectId: moduleExist.projectId,
+    };
+
     const task = await this.prisma.task.create({
-      data: createTaskDto,
+      data: newData,
     });
 
     // 2. Update module progress
     await this.progressService.updateModuleProgress(createTaskDto.moduleId);
 
     // 3. Update project progress
-    await this.progressService.updateProjectProgress(createTaskDto.projectId);
+    await this.progressService.updateProjectProgress(moduleExist.projectId);
     return {
       message: 'Task successfully created',
       data: task,
@@ -74,6 +76,7 @@ export class TaskService {
       data: tasks,
     };
   }
+
   async findByModuleId(id: number) {
     await this.validator.validateModuleExists(id);
     const tasks = await this.prisma.task.findMany({
