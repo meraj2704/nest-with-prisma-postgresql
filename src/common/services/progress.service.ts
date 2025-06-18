@@ -7,7 +7,6 @@ export class ProgressService {
   constructor(private prisma: PrismaService) {}
 
   async updateModuleProgress(moduleId: number) {
-    // Get all tasks in the module
     const tasks = await this.prisma.task.findMany({
       where: { moduleId },
       select: { progress: true },
@@ -15,17 +14,15 @@ export class ProgressService {
 
     if (tasks.length === 0) return 0;
 
-    // Calculate average progress
     const totalProgress = tasks.reduce(
       (sum, task) => sum + (task.progress || 0),
       0,
     );
     const avgProgress = totalProgress / tasks.length;
 
-    // Update module progress
     await this.prisma.module.update({
       where: { id: moduleId },
-      data: { progress: avgProgress },
+      data: { progress: avgProgress, completed: avgProgress === 100 },
     });
 
     return avgProgress;
@@ -50,7 +47,7 @@ export class ProgressService {
     // Update project progress
     await this.prisma.project.update({
       where: { id: projectId },
-      data: { progress: avgProgress },
+      data: { progress: avgProgress, completed: avgProgress === 100 },
     });
 
     return avgProgress;

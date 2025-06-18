@@ -31,6 +31,12 @@ export class TaskService {
     const task = await this.prisma.task.create({
       data: createTaskDto,
     });
+
+    // 2. Update module progress
+    await this.progressService.updateModuleProgress(createTaskDto.moduleId);
+
+    // 3. Update project progress
+    await this.progressService.updateProjectProgress(createTaskDto.projectId);
     return {
       message: 'Task successfully created',
       data: task,

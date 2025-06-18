@@ -22,6 +22,17 @@ export class Validator {
     return project;
   }
 
+  async validateProjectExistWitName(name: string) {
+    const project = await this.prisma.project.findUnique({
+      where: { name },
+    });
+
+    if (project) {
+      throw new ConflictException(`Project with name ${name} already exists`);
+    }
+    return project;
+  }
+
   async validateModuleExists(moduleId: number) {
     const module = await this.prisma.module.findUnique({
       where: { id: moduleId },

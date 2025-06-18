@@ -1,5 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { Priority, ProjectType } from 'generated/prisma';
 
 export class CreateProjectDto {
@@ -34,4 +40,12 @@ export class CreateProjectDto {
   })
   @IsNotEmpty()
   priority: Priority;
+
+  @ApiPropertyOptional({
+    example: '2023-12-31T00:00:00Z',
+    description: 'Due date',
+  })
+  @IsDateString()
+  @IsOptional()
+  dueDate: Date;
 }

@@ -73,11 +73,14 @@ model Project {
   type        ProjectType @default(FRONTEND)
   priority    Priority    @default(LOW)
   progress    Float       @default(0)
+  dueDate     DateTime    @map("due_date")
   createdAt   DateTime    @default(now()) @map("created_at")
   updatedAt   DateTime    @updatedAt @map("updated_at")
+  completed   Boolean     @default(false)
   modules     Module[]
   tasks       Task[]
 
+  @@index([dueDate])
   @@map("projects")
 }
 
@@ -94,6 +97,7 @@ model Module {
   totalWorkHours Float?     @default(0) @map("total_work_hours")
   progress       Float?     @default(0) @map("progress")
   estimatedHours Float?     @map("estimated_hours")
+  completed      Boolean    @default(false)
   createdAt      DateTime   @default(now()) @map("created_at")
   updatedAt      DateTime   @updatedAt @map("updated_at")
 
