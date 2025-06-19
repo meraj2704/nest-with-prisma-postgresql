@@ -100,4 +100,18 @@ export class ProjectController {
   async remove(@Param('id') id: string) {
     return await this.projectService.remove(+id);
   }
+
+  @Get('project-members/:id')
+  @ApiOperation({ summary: 'Get all members for this project' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'Numeric ID of the project to delete',
+    example: 1,
+  })
+  @ApiOkResponse({ description: 'Fetched all members for this project' })
+  @ApiNotFoundResponse({ description: 'Project not found' })
+  async projectMembers(@Param('id') id: string) {
+    return await this.projectService.projectMembers(+id);
+  }
 }

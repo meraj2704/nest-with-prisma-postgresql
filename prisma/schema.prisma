@@ -51,17 +51,22 @@ enum TaskStatus {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  email     String   @unique
-  fullName  String   @map("full_name")
-  phone     String?
-  password  String
-  role      UserRole @default(DEVELOPER)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  tasks     Task[]
-  modules   Module[] @relation("ModuleAssignments")
+  id              Int           @id @default(autoincrement())
+  username        String        @unique
+  email           String        @unique
+  fullName        String        @map("full_name")
+  phone           String?
+  password        String
+  role            UserRole      @default(DEVELOPER)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  // relations
+  projects        Project[]     @relation("ProjectMembers")
+  assignedModules Module[]      @relation("ModuleAssignments")
+  assignedTasks   Task[]        @relation("TaskAssignments")
+  workSessions    WorkSession[]
+  managedProjects Project[]     @relation("ProjectManager")
+  projectId       Int?
 
   @@map("users")
 }
@@ -77,8 +82,13 @@ model Project {
   createdAt   DateTime    @default(now()) @map("created_at")
   updatedAt   DateTime    @updatedAt @map("updated_at")
   completed   Boolean     @default(false)
+  active      Boolean     @default(true)
+  // relations
+  members     User[]      @relation("ProjectMembers")
   modules     Module[]
   tasks       Task[]
+  manager     User?       @relation("ProjectManager", fields: [userId], references: [id])
+  userId      Int?
 
   @@index([dueDate])
   @@map("projects")
@@ -101,10 +111,9 @@ model Module {
   createdAt      DateTime   @default(now()) @map("created_at")
   updatedAt      DateTime   @updatedAt @map("updated_at")
 
-  projectId Int     @map("project_id")
-  project   Project @relation(fields: [projectId], references: [id])
-
-  assignedDevelopers User[] @relation("ModuleAssignments")
+  project            Project @relation(fields: [projectId], references: [id])
+  projectId          Int     @map("project_id")
+  assignedDevelopers User[]  @relation("ModuleAssignments")
   tasks              Task[]
 
   @@index([projectId])
@@ -112,34 +121,32 @@ model Module {
 }
 
 model Task {
-  id             Int           @id @default(autoincrement())
+  id             Int        @id @default(autoincrement())
   title          String
   description    String?
-  type           TaskType      @default(FEATURE)
-  priority       Priority      @default(MEDIUM)
-  dueDate        DateTime?     @map("due_date")
-  progress       Float?        @default(0) @map("progress")
-  totalWorkHours Float?        @default(0) @map("total_work_hours")
-  estimatedHours Float?        @map("estimated_hours")
-  completed      Boolean       @default(false)
-  workSessions   WorkSession[]
-  startedAt      DateTime?     @map("started_at")
-  status         TaskStatus    @default(TODO)
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
+  type           TaskType   @default(FEATURE)
+  priority       Priority   @default(MEDIUM)
+  dueDate        DateTime?  @map("due_date")
+  progress       Float?     @default(0) @map("progress")
+  totalWorkHours Float?     @default(0) @map("total_work_hours")
+  estimatedHours Float?     @map("estimated_hours")
+  completed      Boolean    @default(false)
+  startedAt      DateTime?  @map("started_at")
+  status         TaskStatus @default(TODO)
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+  // relations
+  project        Project    @relation(fields: [projectId], references: [id])
+  projectId      Int        @map("project_id")
 
-  projectId Int     @map("project_id")
-  project   Project @relation(fields: [projectId], references: [id])
-
-  moduleId Int    @map("module_id")
   module   Module @relation(fields: [moduleId], references: [id])
+  moduleId Int    @map("module_id")
 
-  assignedUserId Int  @map("assigned_user_id")
-  assignedUser   User @relation(fields: [assignedUserId], references: [id])
+  assignedUser User[]        @relation("TaskAssignments")
+  workSessions WorkSession[]
 
   @@index([projectId])
   @@index([moduleId])
-  @@index([assignedUserId])
   @@index([dueDate])
   @@index([priority])
   @@map("tasks")
@@ -157,6 +164,7 @@ model WorkSession {
   summary         String
   progress        Float?
   Task            Task      @relation(fields: [taskId], references: [id])
+  User            User      @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([projectId])

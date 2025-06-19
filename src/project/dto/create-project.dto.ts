@@ -1,51 +1,54 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsDateString,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { Priority, ProjectType } from 'generated/prisma';
+import { Type } from 'class-transformer';
+import { IsDate } from 'class-validator';
 
 export class CreateProjectDto {
-  @ApiProperty({ example: 'Project Name' })
+  @ApiProperty({
+    example: 'Project Name',
+    description: 'Name of the project',
+  })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Project name cannot be empty' })
   name: string;
 
-  @ApiProperty({ example: 'Project Description' })
+  @ApiProperty({
+    example: 'Project Description',
+    description: 'Detailed description of the project',
+  })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Project description cannot be empty' })
   description: string;
 
   @ApiProperty({
     enum: ProjectType,
     example: ProjectType.FRONTEND,
-    description: `Project type (${Object.values(ProjectType).join(', ')})`,
+    description: `Project type must be one of: ${Object.values(ProjectType).join(', ')}`,
   })
   @IsEnum(ProjectType, {
-    message: `Invalid project type. Valid values are: ${Object.values(ProjectType).join(', ')}`,
+    message: `Invalid project type '$value'. Valid values are: ${Object.values(ProjectType).join(', ')}`,
   })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Project type cannot be empty' })
   type: ProjectType;
 
   @ApiProperty({
     enum: Priority,
     example: Priority.HIGH,
-    description: `Priority level (${Object.values(Priority).join(', ')})`,
+    description: `Priority must be one of: ${Object.values(Priority).join(', ')}`,
   })
   @IsEnum(Priority, {
-    message: `Invalid priority. Valid values are: ${Object.values(Priority).join(', ')}`,
+    message: `Invalid priority '$value'. Valid values are: ${Object.values(Priority).join(', ')}`,
   })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Priority cannot be empty' })
   priority: Priority;
 
   @ApiPropertyOptional({
-    example: '2023-12-31T00:00:00Z',
-    description: 'Due date',
+    example: '2023-12-31',
+    description:
+      'Due date (YYYY-MM-DD, MM/DD/YYYY, or other common date formats)',
   })
-  @IsDateString()
-  @IsOptional()
+  @IsDate({ message: 'dueDate must be a valid date' })
+  @Type(() => Date)
   dueDate: Date;
 }

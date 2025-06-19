@@ -60,6 +60,24 @@ export class Validator {
     return task;
   }
 
+  async validateUsersExist(userIds: number[]) {
+    if (!userIds?.length) return true;
+
+    const existingUsers = await this.prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true },
+    });
+
+    const existingIds = existingUsers.map((user) => user.id);
+    const missingIds = userIds.filter((id) => !existingIds.includes(id));
+
+    if (missingIds?.length > 0) {
+      throw new NotFoundException(
+        `The following user IDs were not found: ${missingIds.join(', ')}`,
+      );
+    }
+  }
+
   validateTaskInProgress(task: any) {
     if (task.status !== 'IN_PROGRESS') {
       throw new PreconditionFailedException('Task is not in progress');

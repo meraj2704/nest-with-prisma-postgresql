@@ -93,6 +93,9 @@ export class ProjectService {
         type: true,
         priority: true,
         progress: true,
+        active: true,
+        createdAt: true,
+        dueDate: true,
         tasks: {
           select: {
             id: true,
@@ -108,6 +111,12 @@ export class ProjectService {
             priority: true,
             completed: true,
             progress: true,
+            bufferTime: true,
+            buildTime: true,
+            startDate: true,
+            endDate: true,
+            estimatedHours: true,
+            totalWorkHours: true,
             tasks: {
               select: {
                 id: true,
@@ -124,6 +133,15 @@ export class ProjectService {
     }
 
     const { tasks, modules, ...othersData } = project;
+
+    const totalBufferTime = modules.reduce(
+      (sum, module) => sum + (module.bufferTime || 0),
+      0,
+    );
+    const totalBuildTime = modules.reduce(
+      (sum, module) => sum + (module.buildTime || 0),
+      0,
+    );
     return {
       message: 'Project successfully retrieved',
       data: {
@@ -132,6 +150,19 @@ export class ProjectService {
         completedTasks: tasks.filter((t) => t.completed).length,
         totalModule: modules.length,
         completedModules: modules.filter((m) => m.completed).length,
+        totalBufferTime,
+        totalBuildTime,
+        overview: {
+          active: project.active,
+          priority: project.priority,
+          type: project.type,
+          modules: modules.length,
+          startDate: project.createdAt,
+          endDate: project.dueDate,
+          progress: project.progress,
+          totalBufferTime,
+          totalBuildTime,
+        },
         modules: modules.map(({ tasks, ...module }) => ({
           ...module,
           totalTask: tasks.length,
@@ -171,6 +202,29 @@ export class ProjectService {
     return {
       message: 'Project successfully deleted',
       data: project,
+    };
+  }
+
+  // *************************************
+  // ********* Project Team ************
+  // *************************************
+
+  async projectMembers(id: number) {
+    await this.validator.validateProjectExists(id);
+    const members = await this.prisma.project.findUnique({
+      where: { id: id },
+      include: {
+        members: true,
+        modules: {
+          include: {
+            assignedDevelopers: true,
+          },
+        },
+      },
+    });
+    return {
+      message: 'Fetched all developers for this project',
+      data: members,
     };
   }
 }

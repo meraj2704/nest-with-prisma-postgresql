@@ -12,7 +12,18 @@ export class ModuleService {
   ) {}
   async create(createModuleDto: CreateModuleDto) {
     await this.validator.validateProjectExists(createModuleDto.projectId);
-    const module = await this.prisma.module.create({ data: createModuleDto });
+    await this.validator.validateUsersExist(
+      createModuleDto.assignedDeveloperIds,
+    );
+    const { assignedDeveloperIds, ...otherData } = createModuleDto;
+    const module = await this.prisma.module.create({
+      data: {
+        ...otherData,
+        assignedDevelopers: {
+          connect: assignedDeveloperIds?.map((id) => ({ id })) || [],
+        },
+      },
+    });
     return {
       message: 'Module successfully created',
       data: module,

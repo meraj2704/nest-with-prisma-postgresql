@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -80,4 +81,15 @@ export class CreateModuleDto {
   @IsPositive()
   @IsNotEmpty()
   projectId: number;
+
+  @ApiPropertyOptional({
+    example: [101, 202],
+    description: 'Array of developer IDs to assign to this module',
+    type: [Number],
+  })
+  @IsArray()
+  @IsInt({ each: true })
+  @IsPositive({ each: true })
+  @IsOptional()
+  assignedDeveloperIds?: number[];
 }
