@@ -9,7 +9,14 @@ import { ModuleModule } from './modules/module/module.module';
 import { TaskModule } from './modules/task/task.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, ProjectModule, ModuleModule, TaskModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    UsersModule,
+    ProjectModule,
+    ModuleModule,
+    TaskModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
