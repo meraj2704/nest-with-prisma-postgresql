@@ -1,8 +1,13 @@
 import { Validator } from 'src/common/validation/validator.service';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 
 @Injectable()
 export class ModuleService {
@@ -87,13 +92,24 @@ export class ModuleService {
   }
 
   async remove(id: number) {
-    const module = await this.prisma.module.delete({ where: { id } });
-    if (!module) {
-      throw new NotFoundException(`Module with ID ${id} not found`);
+    try {
+      const module = await this.prisma.module.delete({ where: { id } });
+      if (!module) {
+        throw new NotFoundException(`Module with ID ${id} not found`);
+      }
+      return {
+        message: 'Module successfully deleted',
+        data: module,
+      };
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2003') {
+          throw new ConflictException(
+            'Cannot delete this item because it is referenced by other records',
+          );
+        }
+      }
+      throw error;
     }
-    return {
-      message: 'Module successfully deleted',
-      data: module,
-    };
   }
 }

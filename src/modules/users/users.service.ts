@@ -1,6 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 
 @Injectable()
 export class UsersService {
@@ -62,11 +67,22 @@ export class UsersService {
   }
 
   async remove(id: number) {
-    await this.prisma.user.delete({
-      where: { id: id },
-    });
-    return {
-      message: 'User removed successfully',
-    };
+    try {
+      await this.prisma.user.delete({
+        where: { id: id },
+      });
+      return {
+        message: 'User removed successfully',
+      };
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2003') {
+          throw new ConflictException(
+            'Cannot delete this item because it is referenced by other records',
+          );
+        }
+      }
+      throw error;
+    }
   }
 }

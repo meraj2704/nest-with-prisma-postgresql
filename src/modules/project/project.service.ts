@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Validator } from 'src/common/validation/validator.service';
+import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 
 @Injectable()
 export class ProjectService {
@@ -195,14 +200,25 @@ export class ProjectService {
   // *************************************
 
   async remove(id: number) {
-    const project = await this.prisma.project.delete({ where: { id } });
-    if (!project) {
-      throw new NotFoundException(`Project with ID ${id} not found`);
+    try {
+      const project = await this.prisma.project.delete({ where: { id } });
+      if (!project) {
+        throw new NotFoundException(`Project with ID ${id} not found`);
+      }
+      return {
+        message: 'Project successfully deleted',
+        data: project,
+      };
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2003') {
+          throw new ConflictException(
+            'Cannot delete this item because it is referenced by other records',
+          );
+        }
+      }
+      throw error;
     }
-    return {
-      message: 'Project successfully deleted',
-      data: project,
-    };
   }
 
   // *************************************

@@ -12,6 +12,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ProgressService } from 'src/common/services/progress.service';
 
 import { Validator } from 'src/common/validation/validator.service';
+import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 
 @Injectable()
 export class TaskService {
@@ -85,7 +86,12 @@ export class TaskService {
             name: true,
           },
         },
-        assignedUser: true,
+        assignedUser: {
+          select: {
+            id: true,
+            fullName: true,
+          },
+        },
       },
     });
     return {
@@ -144,17 +150,29 @@ export class TaskService {
   }
 
   async remove(id: number) {
-    const task = await this.prisma.task.delete({
-      where: { id },
-    });
+    try {
+      await this.validator.validateTaskExists(id);
+      const task = await this.prisma.task.delete({
+        where: { id },
+      });
 
-    if (!task) {
-      throw new NotFoundException(`Task with ID ${id} not found`);
+      if (!task) {
+        throw new NotFoundException(`Task with ID ${id} not found`);
+      }
+
+      return {
+        message: 'Task successfully removed',
+        data: task,
+      };
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2003') {
+          throw new ConflictException(
+            'Cannot delete this item because it is referenced by other records',
+          );
+        }
+      }
     }
-
-    return {
-      message: 'Task successfully removed',
-    };
   }
 
   async startTask(id: number) {
