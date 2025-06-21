@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsEnum,
   IsInt,
   IsOptional,
@@ -10,7 +11,7 @@ import { ModuleType, Priority } from 'generated/prisma';
 
 export class UpdateModuleDto {
   @ApiPropertyOptional({
-    example: 'Updated Authentication Module',
+    example: 'Authentication Module',
     description: 'Module name',
   })
   @IsString()
@@ -18,7 +19,7 @@ export class UpdateModuleDto {
   name?: string;
 
   @ApiPropertyOptional({
-    example: 'Updated description',
+    example: 'User authentication and authorization',
     description: 'Module description',
   })
   @IsString()
@@ -36,7 +37,7 @@ export class UpdateModuleDto {
 
   @ApiPropertyOptional({
     enum: Priority,
-    example: Priority.HIGH,
+    example: Priority.MEDIUM,
     description: 'Priority level',
   })
   @IsEnum(Priority)
@@ -44,7 +45,7 @@ export class UpdateModuleDto {
   priority?: Priority;
 
   @ApiPropertyOptional({
-    example: 45,
+    example: 40,
     description: 'Estimated build time in hours',
   })
   @IsInt()
@@ -52,28 +53,39 @@ export class UpdateModuleDto {
   @IsOptional()
   buildTime?: number;
 
-  @ApiPropertyOptional({ example: 12, description: 'Buffer time in hours' })
+  @ApiPropertyOptional({ example: 10, description: 'Buffer time in hours' })
   @IsInt()
   @IsPositive()
   @IsOptional()
   bufferTime?: number;
 
   @ApiPropertyOptional({
-    example: '2023-06-05T00:00:00Z',
+    example: '2023-06-01T00:00:00Z',
     description: 'Module start date',
   })
   @IsOptional()
   startDate?: Date;
 
   @ApiPropertyOptional({
-    example: '2023-07-20T00:00:00Z',
+    example: '2023-07-15T00:00:00Z',
     description: 'Module end date',
   })
   @IsOptional()
   endDate?: Date;
 
-  @ApiPropertyOptional({ example: 55.5, description: 'Total estimated hours' })
+  @ApiPropertyOptional({ example: 50.5, description: 'Total estimated hours' })
   @IsPositive()
   @IsOptional()
   estimatedHours?: number;
+
+  @ApiPropertyOptional({
+    example: [101, 202],
+    description: 'Array of developer IDs to assign to this module',
+    type: [Number],
+  })
+  @IsArray()
+  @IsInt({ each: true })
+  @IsPositive({ each: true })
+  @IsOptional()
+  assignedDeveloperIds?: number[];
 }

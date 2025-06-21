@@ -43,6 +43,34 @@ export class Validator {
     return module;
   }
 
+  async validateModuleAlsoUser(moduleId: number, userId: number) {
+    const module = await this.prisma.module.findUnique({
+      where: { id: moduleId },
+      select: {
+        id: true,
+        projectId: true,
+        assignedDevelopers: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+    if (!module) {
+      throw new NotFoundException(`Module not found with ${moduleId}`);
+    }
+    if (module.assignedDevelopers.length === 0) {
+      throw new NotFoundException(`User not found in this module.`);
+    }
+    const userExist = module.assignedDevelopers.find(
+      (dev) => dev.id === userId,
+    );
+    if (!userExist) {
+      throw new NotFoundException(`This user not exist in this module`);
+    }
+    return module;
+  }
+
   async validateModuleInProject(moduleId: number, projectId: number) {
     const module = await this.validateModuleExists(moduleId);
     if (module.projectId !== projectId) {

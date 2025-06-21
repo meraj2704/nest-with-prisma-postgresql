@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
-  IsDateString,
+  IsDate,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -46,12 +47,13 @@ export class CreateTaskDto {
   priority: Priority;
 
   @ApiPropertyOptional({
-    example: '2023-12-31T00:00:00Z',
-    description: 'Due date',
+    example: '2023-12-31',
+    description:
+      'Due date (YYYY-MM-DD, MM/DD/YYYY, or other common date formats)',
   })
-  @IsDateString()
-  @IsOptional()
-  dueDate?: Date;
+  @IsDate({ message: 'dueDate must be a valid date' })
+  @Type(() => Date)
+  dueDate: Date;
 
   @ApiPropertyOptional({
     example: 8.5,
@@ -71,5 +73,5 @@ export class CreateTaskDto {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
-  assignedUserId: number;
+  assignedUser: number;
 }

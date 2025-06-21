@@ -1,4 +1,4 @@
-import { Validator } from './../common/validation/validator.service';
+import { Validator } from 'src/common/validation/validator.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
@@ -60,9 +60,29 @@ export class ModuleService {
   }
 
   async update(id: number, updateModuleDto: UpdateModuleDto) {
+    await this.validator.validateModuleExists(id);
+    if (updateModuleDto.assignedDeveloperIds) {
+      await this.validator.validateUsersExist(
+        updateModuleDto.assignedDeveloperIds,
+      );
+    }
     return await this.prisma.module.update({
       where: { id },
-      data: updateModuleDto,
+      data: {
+        name: updateModuleDto.name,
+        description: updateModuleDto.description,
+        type: updateModuleDto.type,
+        priority: updateModuleDto.priority,
+        buildTime: updateModuleDto.buildTime,
+        bufferTime: updateModuleDto.bufferTime,
+        startDate: updateModuleDto.startDate,
+        endDate: updateModuleDto.endDate,
+        estimatedHours: updateModuleDto.estimatedHours,
+        assignedDevelopers: {
+          connect:
+            updateModuleDto.assignedDeveloperIds?.map((id) => ({ id })) || [],
+        },
+      },
     });
   }
 

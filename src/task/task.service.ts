@@ -21,24 +21,38 @@ export class TaskService {
     private validator: Validator,
   ) {}
   async create(createTaskDto: CreateTaskDto) {
-    const moduleExist = await this.validator.validateModuleExists(
+    const module = await this.validator.validateModuleAlsoUser(
       createTaskDto.moduleId,
+      createTaskDto.assignedUser,
     );
 
-    const newData = {
-      ...createTaskDto,
-      projectId: moduleExist.projectId,
-    };
+    const {
+      title,
+      description,
+      type,
+      priority,
+      dueDate,
+      estimatedHours,
+      moduleId,
+      assignedUser,
+    } = createTaskDto;
 
     const task = await this.prisma.task.create({
-      data: newData,
+      data: {
+        title,
+        description,
+        type,
+        priority,
+        dueDate,
+        estimatedHours,
+        module: { connect: { id: moduleId } },
+        project: { connect: { id: module.projectId } },
+        assignedUser: { connect: { id: assignedUser } },
+      },
     });
-
-    // 2. Update module progress
     await this.progressService.updateModuleProgress(createTaskDto.moduleId);
 
-    // 3. Update project progress
-    await this.progressService.updateProjectProgress(moduleExist.projectId);
+    await this.progressService.updateProjectProgress(module.projectId);
     return {
       message: 'Task successfully created',
       data: task,
@@ -46,7 +60,34 @@ export class TaskService {
   }
 
   async findAll() {
-    const tasks = await this.prisma.task.findMany();
+    const tasks = await this.prisma.task.findMany({
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        type: true,
+        priority: true,
+        dueDate: true,
+        progress: true,
+        totalWorkHours: true,
+        estimatedHours: true,
+        completed: true,
+        status: true,
+        project: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        module: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        assignedUser: true,
+      },
+    });
     return {
       message: 'Tasks successfully retrieved',
       data: tasks,

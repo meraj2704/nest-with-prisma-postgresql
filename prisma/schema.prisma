@@ -63,7 +63,7 @@ model User {
   // relations
   projects        Project[]     @relation("ProjectMembers")
   assignedModules Module[]      @relation("ModuleAssignments")
-  assignedTasks   Task[]        @relation("TaskAssignments")
+  assignedTasks Task[] @relation("TaskAssignments")
   workSessions    WorkSession[]
   managedProjects Project[]     @relation("ProjectManager")
   projectId       Int?
@@ -142,7 +142,8 @@ model Task {
   module   Module @relation(fields: [moduleId], references: [id])
   moduleId Int    @map("module_id")
 
-  assignedUser User[]        @relation("TaskAssignments")
+  assignedUser   User?   @relation("TaskAssignments", fields: [assignedUserId], references: [id])
+  assignedUserId Int?    @map("assigned_user_id")
   workSessions WorkSession[]
 
   @@index([projectId])
