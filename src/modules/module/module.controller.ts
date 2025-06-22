@@ -7,19 +7,28 @@ import {
   Param,
   Delete,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { ModuleService } from './module.service';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
   ApiOperation,
   ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorator/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
+@ApiTags('Module')
 @Controller('module')
+@ApiBearerAuth('access-token')
+@UseGuards(JwtAuthGuard)
 export class ModuleController {
   constructor(private readonly moduleService: ModuleService) {}
 
@@ -95,5 +104,17 @@ export class ModuleController {
   })
   remove(@Param('id') id: string) {
     return this.moduleService.remove(+id);
+  }
+
+  @Get('assign-developers/:id')
+  @UseGuards(RolesGuard)
+  @Roles('MANAGER', 'TEAM_LEAD')
+  @ApiOperation({ summary: 'Get all assign developers by module id' })
+  @ApiResponse({
+    status: 200,
+    description: 'Module successfully deleted',
+  })
+  assignedDevelopers(@Param('id') id: string) {
+    return this.moduleService.assignedDevelopers(+id);
   }
 }

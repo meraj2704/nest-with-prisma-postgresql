@@ -112,4 +112,23 @@ export class ModuleService {
       throw error;
     }
   }
+
+  async assignedDevelopers(id: number) {
+    await this.validator.validateModuleExists(id);
+    const developers = await this.prisma.module.findUnique({
+      where: { id },
+      select: {
+        assignedDevelopers: {
+          select: {
+            id: true,
+            fullName: true,
+          },
+        },
+      },
+    });
+    return {
+      message: 'Assign developer for the project',
+      data: developers,
+    };
+  }
 }

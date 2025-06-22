@@ -70,6 +70,7 @@ export class TaskController {
   })
   @ApiResponse({ status: 404, description: 'Task not found.' })
   findOne(@Param('id') id: string) {
+    console.log('find here');
     return this.taskService.findOne(+id);
   }
 
@@ -176,7 +177,7 @@ export class TaskController {
   // *************************************
   // ************ My TASK TASK *************
   // *************************************
-  @Get('my-task')
+  @Get('my-tasks')
   @ApiOperation({ summary: 'My tasks' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -187,6 +188,8 @@ export class TaskController {
     description: 'User not exist',
   })
   myTask(@Request() req) {
-    return this.taskService.myTask(req.user.userId);
+    console.log('req', req);
+    return 'hittt';
+    // return this.taskService.myTask(req.user.userId);
   }
 }
