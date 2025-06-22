@@ -7,14 +7,24 @@ import {
   Param,
   Delete,
   HttpStatus,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { EndTaskDto } from './dto/end-task.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('task')
+@ApiBearerAuth('access-token')
+@UseGuards(JwtAuthGuard)
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
@@ -143,7 +153,7 @@ export class TaskController {
   }
 
   // *************************************
-  // ************ START TASK *************
+  // ************ END TASK *************
   // *************************************
   @Post('end/:id')
   @ApiOperation({ summary: 'End task with id' })
@@ -161,5 +171,22 @@ export class TaskController {
   })
   end(@Param('id') id: number, @Body() endTaskDto: EndTaskDto) {
     return this.taskService.endTask(id, endTaskDto);
+  }
+
+  // *************************************
+  // ************ My TASK TASK *************
+  // *************************************
+  @Post('my-task')
+  @ApiOperation({ summary: 'My tasks' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Task successfully fetched',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not exist',
+  })
+  myTask(@Request() req) {
+    return this.taskService.myTask(req.user.userId);
   }
 }

@@ -88,6 +88,17 @@ export class Validator {
     return task;
   }
 
+  async validateUserExist(userId: number) {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+
+    if (!existingUser) {
+      throw new NotFoundException(`The following user were not found}`);
+    }
+  }
+
   async validateUsersExist(userIds: number[]) {
     if (!userIds?.length) return true;
 

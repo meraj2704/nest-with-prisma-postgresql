@@ -23,9 +23,9 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Remove non-whitelisted properties
-      transform: true, // Automatically transform payloads to DTO instances
-      forbidNonWhitelisted: true, // Throw errors for non-whitelisted properties
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
       transformOptions: {
         enableImplicitConversion: true,
       },
@@ -34,10 +34,19 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalFilters(new ValidationExceptionFilter());
   const config = new DocumentBuilder()
-    .setTitle('Api Documentation')
-    .setDescription('Api Documentation for the project')
+    .setTitle('My API')
+    .setDescription('API description')
     .setVersion('1.0')
-    .addBearerAuth() // Simplified version - no name needed
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        in: 'header',
+      },
+      'access-token', // This key will be used in the decorator
+    )
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

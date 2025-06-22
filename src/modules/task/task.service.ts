@@ -21,6 +21,10 @@ export class TaskService {
     private progressService: ProgressService,
     private validator: Validator,
   ) {}
+
+  // *************************************
+  // ************ CREATE TASK *************
+  // *************************************
   async create(createTaskDto: CreateTaskDto) {
     const module = await this.validator.validateModuleAlsoUser(
       createTaskDto.moduleId,
@@ -59,6 +63,10 @@ export class TaskService {
       data: task,
     };
   }
+
+  // ****************************************
+  // ************ FIND ALL TASK *************
+  // ****************************************
 
   async findAll() {
     const tasks = await this.prisma.task.findMany({
@@ -99,6 +107,9 @@ export class TaskService {
       data: tasks,
     };
   }
+  // ****************************************
+  // ************ FIND ONE TASK *************
+  // ****************************************
 
   async findOne(id: number) {
     const task = await this.prisma.task.findUnique({
@@ -113,6 +124,10 @@ export class TaskService {
     };
   }
 
+  // *************************************************
+  // ************ FIND BY PROJECT IS TASK *************
+  // **************************************************
+
   async findByProjectId(id: number) {
     await this.validator.validateProjectExists(id);
     const tasks = await this.prisma.task.findMany({
@@ -123,7 +138,9 @@ export class TaskService {
       data: tasks,
     };
   }
-
+  // **********************************************
+  // ************ FIND BY MODULE TASK *************
+  // **********************************************
   async findByModuleId(id: number) {
     await this.validator.validateModuleExists(id);
     const tasks = await this.prisma.task.findMany({
@@ -134,6 +151,10 @@ export class TaskService {
       data: tasks,
     };
   }
+
+  // *************************************
+  // ************ UPDATE TASK *************
+  // *************************************
 
   async update(id: number, updateTaskDto: UpdateTaskDto) {
     const task = await this.prisma.task.update({
@@ -148,6 +169,9 @@ export class TaskService {
       data: task,
     };
   }
+  // *************************************
+  // ************ REMOVE TASK *************
+  // *************************************
 
   async remove(id: number) {
     try {
@@ -175,6 +199,10 @@ export class TaskService {
     }
   }
 
+  // *************************************
+  // ************ START TASK *************
+  // *************************************
+
   async startTask(id: number) {
     const task = await this.prisma.task.findUnique({
       where: { id },
@@ -200,6 +228,10 @@ export class TaskService {
       data: updatedTask,
     };
   }
+
+  // *************************************
+  // ************ END TASK *************
+  // *************************************
 
   async endTask(id: number, endTaskDto: EndTaskDto) {
     return await this.prisma.$transaction(async (prisma) => {
@@ -262,5 +294,20 @@ export class TaskService {
         },
       };
     });
+  }
+
+  // *************************************
+  // ************ END TASK *************
+  // *************************************
+
+  async myTask(id: number) {
+    await this.validator.validateUserExist(id);
+    const tasks = await this.prisma.task.findMany({
+      where: { assignedUserId: id },
+    });
+    return {
+      message: 'Tasks fetched successfully',
+      data: tasks,
+    };
   }
 }

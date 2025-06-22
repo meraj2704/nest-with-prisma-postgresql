@@ -85,7 +85,7 @@ export class AuthService {
   private generateTokens(user: any) {
     const payload = {
       email: user.email,
-      sub: user.user_id,
+      sub: user.id,
       username: user.username,
       role: user.role,
     };
