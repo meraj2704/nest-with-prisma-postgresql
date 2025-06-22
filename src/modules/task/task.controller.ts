@@ -176,7 +176,7 @@ export class TaskController {
   // *************************************
   // ************ My TASK TASK *************
   // *************************************
-  @Post('my-task')
+  @Get('my-task')
   @ApiOperation({ summary: 'My tasks' })
   @ApiResponse({
     status: HttpStatus.OK,
