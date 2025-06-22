@@ -6,12 +6,54 @@ import {
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
+import { CreateUserDto } from './dto/create-user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService, // Assuming PrismaService is injected for database operations
   ) {}
+
+  async create(createUserDto: CreateUserDto) {
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: createUserDto.email },
+          { username: createUserDto.username },
+        ],
+      },
+    });
+    if (existingUser) {
+      console.log('existingUser', existingUser);
+      console.log('createUserDto', createUserDto);
+      if (existingUser.email === createUserDto.email) {
+        throw new ConflictException('User with this email already exists');
+      }
+      if (existingUser.username === createUserDto.username) {
+        throw new ConflictException('User with this username already exists');
+      }
+    }
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const user = await this.prisma.user.create({
+      data: {
+        username: createUserDto.username,
+        fullName: createUserDto.full_name,
+        email: createUserDto.email,
+        phone: createUserDto.phone,
+        password: hashedPassword,
+      },
+    });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
+
+    return {
+      message: 'User registered successfully',
+      data: {
+        user: userWithoutPassword,
+      },
+    };
+  }
 
   async findAll() {
     const users = await this.prisma.user.findMany({

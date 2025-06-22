@@ -23,6 +23,8 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorator/roles.decorator';
 
 @ApiTags('Projects')
 @Controller('project')
@@ -93,6 +95,8 @@ export class ProjectController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('MANAGER', 'TEAM_LEAD')
   @ApiOperation({ summary: 'Delete a project' })
   @ApiParam({
     name: 'id',

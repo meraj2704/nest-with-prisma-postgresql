@@ -17,14 +17,17 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
+    console.log('required roles', requiredRoles);
+
     const request = context.switchToHttp().getRequest();
     const user = request.user; // JwtAuthGuard already attached user to request
-
+    console.log('user', user);
     if (!user) {
       return false;
     }
 
     const matched = requiredRoles.filter((role) => role === user.role);
+    console.log('matched', matched);
     return matched.length > 0;
   }
 }
