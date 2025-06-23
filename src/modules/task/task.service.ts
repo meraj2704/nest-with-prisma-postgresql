@@ -64,6 +64,40 @@ export class TaskService {
     };
   }
 
+  // ****************************************************
+  // ************ TASK MANAGEMENT DASHBOARD *************
+  // ****************************************************
+
+  async taskManagementDashboard() {
+    const tasks = await this.prisma.task.count();
+
+    const completedTasks = await this.prisma.task.count({
+      where: {
+        status: 'DONE',
+      },
+    });
+
+    const notStartedTasks = await this.prisma.task.count({
+      where: {
+        status: 'TODO',
+      },
+    });
+    const inProgressTask = await this.prisma.task.count({
+      where: {
+        status: 'IN_PROGRESS',
+      },
+    });
+    const newData = {
+      totalTasks: tasks,
+      completedTasks,
+      notStartedTasks,
+      inProgressTask,
+    };
+    return {
+      message: 'Tasks successfully retrieved',
+      data: newData,
+    };
+  }
   // ****************************************
   // ************ FIND ALL TASK *************
   // ****************************************
@@ -104,7 +138,15 @@ export class TaskService {
     });
     return {
       message: 'Tasks successfully retrieved',
-      data: tasks,
+      data: tasks.map(({ project, module, assignedUser, ...restOfData }) => ({
+        ...restOfData,
+        project: project.name,
+        projectId: project.id,
+        module: module.name,
+        moduleId: module.id,
+        assignedUser: assignedUser.fullName,
+        assignedUserId: assignedUser.id,
+      })),
     };
   }
   // ****************************************
@@ -112,9 +154,7 @@ export class TaskService {
   // ****************************************
 
   async findOne(id: number) {
-    const task = await this.prisma.task.findUnique({
-      where: { id },
-    });
+    const task = await this.validator.validateTaskExists(id);
     if (!task) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
@@ -297,13 +337,37 @@ export class TaskService {
   }
 
   // *************************************
-  // ************ END TASK *************
+  // ************ My TASK *************
   // *************************************
 
   async myTask(id: number) {
     await this.validator.validateUserExist(id);
     const tasks = await this.prisma.task.findMany({
       where: { assignedUserId: id },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        project: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        module: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        status: true,
+        priority: true,
+        type: true,
+        dueDate: true,
+        progress: true,
+        estimatedHours: true,
+        totalWorkHours: true,
+      },
     });
     return {
       message: 'Tasks fetched successfully',

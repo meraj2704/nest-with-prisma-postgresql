@@ -47,6 +47,20 @@ export class TaskController {
   // *************************************
   // ********** GET ALL TASK *************
   // *************************************
+  @Get('management/dashboard')
+  @ApiOperation({ summary: 'Retrieve all data for Task Management Dashboard' })
+  @ApiResponse({
+    status: 200,
+    description: 'Task Management Dashboard Data successfully retrieved.',
+    type: [CreateTaskDto],
+  })
+  taskManagementDashboard() {
+    return this.taskService.taskManagementDashboard();
+  }
+
+  // *************************************
+  // ********** GET ALL TASK *************
+  // *************************************
   @Get('all')
   @ApiOperation({ summary: 'Retrieve all tasks' })
   @ApiResponse({
@@ -177,7 +191,7 @@ export class TaskController {
   // *************************************
   // ************ My TASK TASK *************
   // *************************************
-  @Get('my-tasks')
+  @Get('my/tasks')
   @ApiOperation({ summary: 'My tasks' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -188,8 +202,6 @@ export class TaskController {
     description: 'User not exist',
   })
   myTask(@Request() req) {
-    console.log('req', req);
-    return 'hittt';
-    // return this.taskService.myTask(req.user.userId);
+    return this.taskService.myTask(req.user.userId);
   }
 }

@@ -128,6 +128,7 @@ export class ModuleService {
           select: {
             id: true,
             fullName: true,
+            role: true,
           },
         },
       },
