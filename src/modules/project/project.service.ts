@@ -122,6 +122,11 @@ export class ProjectService {
             endDate: true,
             estimatedHours: true,
             totalWorkHours: true,
+            _count: {
+              select: {
+                assignedDevelopers: true,
+              },
+            },
             tasks: {
               select: {
                 id: true,
@@ -168,10 +173,11 @@ export class ProjectService {
           totalBufferTime,
           totalBuildTime,
         },
-        modules: modules.map(({ tasks, ...module }) => ({
+        modules: modules.map(({ tasks, _count, ...module }) => ({
           ...module,
           totalTask: tasks.length,
           completedTasks: tasks.filter((m) => m.completed).length,
+          developers: _count.assignedDevelopers,
         })),
       },
     };
@@ -230,17 +236,33 @@ export class ProjectService {
     const members = await this.prisma.project.findUnique({
       where: { id: id },
       include: {
-        members: true,
-        modules: {
-          include: {
-            assignedDevelopers: true,
+        _count: {
+          select: {
+            members: true,
+          },
+        },
+        members: {
+          select: {
+            id: true,
+            fullName: true,
+            role: true,
+            assignedModules: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
     });
+    const { _count, ...otherData } = members;
     return {
       message: 'Fetched all developers for this project',
-      data: members,
+      data: {
+        ...otherData,
+        totalDevelopers: _count.members,
+      },
     };
   }
 }

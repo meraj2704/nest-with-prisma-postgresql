@@ -29,6 +29,15 @@ export class ModuleService {
         },
       },
     });
+
+    await this.prisma.project.update({
+      where: { id: createModuleDto.projectId },
+      data: {
+        members: {
+          connect: assignedDeveloperIds.map((id) => ({ id })),
+        },
+      },
+    });
     return {
       message: 'Module successfully created',
       data: module,
