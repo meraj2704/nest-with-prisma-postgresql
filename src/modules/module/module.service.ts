@@ -53,10 +53,7 @@ export class ModuleService {
   }
 
   async findOne(id: number) {
-    const module = await this.prisma.module.findUnique({ where: { id } });
-    if (!module) {
-      throw new NotFoundException(`Module with ID ${id} not found`);
-    }
+    const module = await this.validator.validateModuleExists(id);
     return {
       message: 'Module found',
       data: module,
