@@ -13,6 +13,7 @@ export class Validator {
   constructor(private readonly prisma: PrismaService) {}
 
   async validateProjectExists(projectId: number) {
+    if (!projectId) throw new BadRequestException('Project ID is required');
     const project = await this.prisma.project.findUnique({
       where: { id: projectId },
     });
@@ -34,6 +35,7 @@ export class Validator {
   }
 
   async validateModuleExists(moduleId: number) {
+    if (!moduleId) throw new BadRequestException('Module ID is required');
     const module = await this.prisma.module.findUnique({
       where: { id: moduleId },
     });
@@ -44,6 +46,8 @@ export class Validator {
   }
 
   async validateModuleAlsoUser(moduleId: number, userId: number) {
+    if (!moduleId) throw new BadRequestException('Module ID is required');
+    if (!userId) throw new BadRequestException('User ID is required');
     const module = await this.prisma.module.findUnique({
       where: { id: moduleId },
       select: {
@@ -72,6 +76,8 @@ export class Validator {
   }
 
   async validateModuleInProject(moduleId: number, projectId: number) {
+    if (!moduleId) throw new BadRequestException('Module ID is required');
+    if (!projectId) throw new BadRequestException('Project ID is required');
     const module = await this.validateModuleExists(moduleId);
     if (module.projectId !== projectId) {
       throw new NotFoundException(`Module does not belong to project`);
@@ -79,6 +85,7 @@ export class Validator {
     return module;
   }
   async validateTaskExists(taskId: number) {
+    if (!taskId) throw new BadRequestException('Task ID is required');
     const task = await this.prisma.task.findUnique({
       where: { id: taskId },
     });
@@ -89,6 +96,7 @@ export class Validator {
   }
 
   async validateUserExist(userId: number) {
+    if (!userId) throw new BadRequestException('User ID is required');
     const existingUser = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { id: true },
