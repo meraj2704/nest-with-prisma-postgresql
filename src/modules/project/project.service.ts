@@ -48,6 +48,7 @@ export class ProjectService {
           select: {
             modules: true,
             tasks: true,
+            members: true,
           },
         },
       },
@@ -75,6 +76,7 @@ export class ProjectService {
           completedTasks,
           totalModules: _count.modules,
           completedModules,
+          members: _count.members,
         };
       }),
     );

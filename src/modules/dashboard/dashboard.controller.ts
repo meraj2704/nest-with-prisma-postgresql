@@ -66,8 +66,8 @@ export class DashboardController {
   @ApiForbiddenResponse({
     description: 'Forbidden - user does not have team lead privileges',
   })
-  teamLeadDashboard() {
-    return this.dashboardService.teamLeadDashboard();
+  teamLeadDashboard(@Request() req) {
+    return this.dashboardService.teamLeadDashboard(req.user.userId);
   }
 
   @Get('developer')
@@ -84,7 +84,6 @@ export class DashboardController {
     description: 'Unauthorized - valid authentication token required',
   })
   developerDashboard(@Request() req) {
-    console.log('user', req.user);
     return this.dashboardService.developerDashboard(req.user.userId);
   }
 }

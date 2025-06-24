@@ -11,8 +11,8 @@ export class DashboardService {
   async managerDashboard() {
     return 'This action adds a manager dashboard';
   }
-  async teamLeadDashboard() {
-    return 'This action adds a team lead dashboard';
+  async teamLeadDashboard(id: number) {
+    return id;
   }
   async developerDashboard(id: number) {
     await this.validator.validateUserExist(id);
