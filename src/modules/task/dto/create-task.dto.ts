@@ -74,4 +74,11 @@ export class CreateTaskDto {
   @IsPositive()
   @IsNotEmpty()
   assignedUser: number;
+
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Department Id',
+  })
+  @IsNotEmpty({ message: 'Department Id is required' })
+  departmentId: number;
 }

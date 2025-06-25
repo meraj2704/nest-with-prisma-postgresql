@@ -92,4 +92,11 @@ export class CreateModuleDto {
   @IsPositive({ each: true })
   @IsOptional()
   assignedDeveloperIds?: number[];
+
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Department Id',
+  })
+  @IsNotEmpty({ message: 'Department Id is required' })
+  departmentId: number;
 }

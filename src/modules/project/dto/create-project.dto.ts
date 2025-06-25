@@ -51,4 +51,11 @@ export class CreateProjectDto {
   @IsDate({ message: 'dueDate must be a valid date' })
   @Type(() => Date)
   dueDate: Date;
+
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Department Id',
+  })
+  @IsNotEmpty({ message: 'Department Id is required' })
+  departmentId: number;
 }

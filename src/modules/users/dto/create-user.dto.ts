@@ -25,4 +25,11 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  @ApiProperty({
+    example: 1,
+    description: 'Department Id',
+  })
+  @IsNotEmpty({ message: 'Department Id is required' })
+  departmentId: number;
 }

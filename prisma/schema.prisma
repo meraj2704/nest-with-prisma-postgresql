@@ -84,7 +84,7 @@ model User {
   workSessions    WorkSession[]
   managedProjects Project[]     @relation("ProjectManager")
   projectId       Int?
-  Department      Department?   @relation(fields: [departmentId], references: [id])
+  Department      Department   @relation(fields: [departmentId], references: [id])
   departmentId    Int
 
   @@map("users")

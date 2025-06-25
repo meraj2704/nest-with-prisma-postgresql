@@ -40,6 +40,7 @@ export class TaskService {
       estimatedHours,
       moduleId,
       assignedUser,
+      departmentId,
     } = createTaskDto;
 
     const task = await this.prisma.task.create({
@@ -53,6 +54,7 @@ export class TaskService {
         module: { connect: { id: moduleId } },
         project: { connect: { id: module.projectId } },
         assignedUser: { connect: { id: assignedUser } },
+        Department: { connect: { id: departmentId } },
       },
     });
     await this.progressService.updateModuleProgress(createTaskDto.moduleId);
@@ -307,6 +309,7 @@ export class TaskService {
           projectId: task.projectId,
           moduleId: task.moduleId,
           userId: 1,
+          departmentId: task.departmentId,
         },
       });
 

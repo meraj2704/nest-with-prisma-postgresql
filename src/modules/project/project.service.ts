@@ -20,8 +20,12 @@ export class ProjectService {
   // *************************************
   async create(createProjectDto: CreateProjectDto) {
     await this.validator.validateProjectExistWitName(createProjectDto.name);
+    const { departmentId, ...projectData } = createProjectDto;
     const project = await this.prisma.project.create({
-      data: createProjectDto,
+      data: {
+        ...projectData,
+        Department: { connect: { id: departmentId } },
+      },
     });
     return {
       message: 'Project successfully created',

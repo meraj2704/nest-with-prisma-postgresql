@@ -20,13 +20,16 @@ export class ModuleService {
     await this.validator.validateUsersExist(
       createModuleDto.assignedDeveloperIds,
     );
-    const { assignedDeveloperIds, ...otherData } = createModuleDto;
+    const { assignedDeveloperIds, departmentId, projectId, ...restData } =
+      createModuleDto;
     const module = await this.prisma.module.create({
       data: {
-        ...otherData,
+        ...restData,
+        Department: { connect: { id: departmentId } },
         assignedDevelopers: {
           connect: assignedDeveloperIds?.map((id) => ({ id })) || [],
         },
+        project: { connect: { id: projectId } },
       },
     });
 

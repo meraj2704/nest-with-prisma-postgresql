@@ -41,6 +41,7 @@ export class UsersService {
         fullName: createUserDto.full_name,
         email: createUserDto.email,
         phone: createUserDto.phone,
+        Department: { connect: { id: createUserDto.departmentId } },
         password: hashedPassword,
       },
     });

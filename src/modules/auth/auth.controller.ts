@@ -16,11 +16,10 @@ import {
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto, TokensDto } from './dto/tokens.dto';
-import { RegisterDto } from './dto/register.dto';
+
 import { ChangePasswordDto } from './dto/password.dto';
 import { GetUser } from 'src/common/decorators/user.decorator';
-import { RolesGuard } from './guards/roles.guard';
-import { Roles } from './decorator/roles.decorator';
+
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @ApiTags('Authentication')
@@ -42,19 +41,19 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @Post('register')
-  @ApiBearerAuth('access-token')
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(RolesGuard)
-  @Roles('MANAGER', 'TEAM_LEAD')
-  @ApiOperation({ summary: 'User Registration' })
-  @ApiBody({ type: RegisterDto })
-  @ApiResponse({ status: 201, description: 'User registered successfully' })
-  @ApiResponse({ status: 400, description: 'Bad Request' })
-  @ApiResponse({ status: 409, description: 'Conflict - User already exists' })
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
-  }
+  // @Post('register')
+  // @ApiBearerAuth('access-token')
+  // @UseGuards(JwtAuthGuard)
+  // @UseGuards(RolesGuard)
+  // @Roles('MANAGER', 'TEAM_LEAD')
+  // @ApiOperation({ summary: 'User Registration' })
+  // @ApiBody({ type: RegisterDto })
+  // @ApiResponse({ status: 201, description: 'User registered successfully' })
+  // @ApiResponse({ status: 400, description: 'Bad Request' })
+  // @ApiResponse({ status: 409, description: 'Conflict - User already exists' })
+  // async register(@Body() registerDto: RegisterDto) {
+  //   return this.authService.register(registerDto);
+  // }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
