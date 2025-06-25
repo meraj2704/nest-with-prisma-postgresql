@@ -67,10 +67,12 @@ export class DashboardController {
     description: 'Forbidden - user does not have team lead privileges',
   })
   teamLeadDashboard(@Request() req) {
-    return this.dashboardService.teamLeadDashboard(req.user.userId);
+    return this.dashboardService.teamLeadDashboard(req.user.departmentId);
   }
 
   @Get('developer')
+  @UseGuards(RolesGuard)
+  @Roles('DEVELOPER')
   @ApiOperation({
     summary: 'Get developer dashboard data',
     description: 'Returns task and productivity data for individual developers',

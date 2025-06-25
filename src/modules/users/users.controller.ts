@@ -9,6 +9,7 @@ import {
   HttpStatus,
   UseGuards,
   Post,
+  Request,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -55,6 +56,19 @@ export class UsersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAll() {
     return this.usersService.findAll();
+  }
+
+  @Get('team-members')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Retrieve all users' })
+  @ApiResponse({
+    status: 200,
+    description: 'Users retrieved successfully',
+    type: [AllUserDto],
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  usersAsTeamMembers(@Request() req) {
+    return this.usersService.usersAsTeam(req.user.departmentId);
   }
 
   @Get(':id')

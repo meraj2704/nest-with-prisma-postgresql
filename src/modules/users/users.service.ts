@@ -128,4 +128,65 @@ export class UsersService {
       throw error;
     }
   }
+
+  async usersAsTeam(id: number) {
+    const teamMembers = await this.prisma.user.findMany({
+      where: { departmentId: id },
+      select: {
+        id: true,
+        username: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        role: true,
+        createdAt: true,
+        projects: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        workSessions: {
+          select: {
+            id: true,
+            durationMinutes: true,
+          },
+        },
+        assignedTasks: {
+          select: {
+            id: true,
+            completed: true,
+          },
+        },
+        assignedModules: {
+          select: {
+            id: true,
+            completed: true,
+          },
+        },
+      },
+    });
+
+    const dataFormat = teamMembers.map(
+      ({ workSessions, assignedTasks, assignedModules, ...member }) => ({
+        ...member,
+        totalWorkingHours: parseFloat(
+          (
+            workSessions.reduce(
+              (total, session) => total + session.durationMinutes,
+              0,
+            ) / 60
+          ).toFixed(2),
+        ),
+        totalTasks: assignedTasks.length,
+        completedTasks: assignedTasks.filter((t) => t.completed).length,
+        totalModules: assignedModules.length,
+        completedModules: assignedModules.filter((t) => t.completed).length,
+      }),
+    );
+    return {
+      message: 'Successfully fetched team members',
+      data: dataFormat,
+    };
+  }
 }

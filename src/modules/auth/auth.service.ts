@@ -86,9 +86,10 @@ export class AuthService {
       sub: user.id,
       username: user.username,
       role: user.role,
+      departmentId: user.departmentId,
     };
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload, { expiresIn: '1d' }),
       refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
     };
   }
