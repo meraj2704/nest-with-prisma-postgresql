@@ -155,9 +155,37 @@ export class DashboardService {
       },
       select: {
         id: true,
-        status: true,
         title: true,
+        description: true,
+        project: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        module: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        status: true,
+        priority: true,
+        type: true,
+        dueDate: true,
+        progress: true,
+        estimatedHours: true,
+        totalWorkHours: true,
+        completed: true,
       },
+      orderBy: [
+        {
+          completed: 'asc',
+        },
+        {
+          dueDate: 'asc',
+        },
+      ],
     });
     const userProjects = await this.prisma.user.findUnique({
       where: {
@@ -174,6 +202,9 @@ export class DashboardService {
     });
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter((t) => t.status === 'DONE').length;
+    const nonCompletedTasks = tasks
+      .filter((t) => t.status !== 'DONE')
+      .slice(0, 5);
     const inProgressTasks = tasks.filter(
       (t) => t.status === 'IN_PROGRESS',
     ).length;
@@ -192,6 +223,7 @@ export class DashboardService {
         notStartedTasks,
         totalProjects,
         completedProjects,
+        upcomingDueTasks: nonCompletedTasks,
       },
     };
   }

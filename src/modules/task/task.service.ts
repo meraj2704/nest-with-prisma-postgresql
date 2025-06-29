@@ -346,7 +346,7 @@ export class TaskService {
   async myTask(id: number) {
     await this.validator.validateUserExist(id);
     const tasks = await this.prisma.task.findMany({
-      where: { assignedUserId: id },
+      where: { assignedUserId: id, completed: false },
       select: {
         id: true,
         title: true,
@@ -371,6 +371,14 @@ export class TaskService {
         estimatedHours: true,
         totalWorkHours: true,
       },
+      orderBy: [
+        {
+          status: 'desc',
+        },
+        {
+          dueDate: 'asc',
+        },
+      ],
     });
     return {
       message: 'Tasks fetched successfully',
