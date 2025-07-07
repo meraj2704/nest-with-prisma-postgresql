@@ -308,7 +308,7 @@ export class TaskService {
           taskId: id,
           projectId: task.projectId,
           moduleId: task.moduleId,
-          userId: 1,
+          userId: task.assignedUserId,
           departmentId: task.departmentId,
         },
       });

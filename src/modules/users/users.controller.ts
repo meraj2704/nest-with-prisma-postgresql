@@ -103,6 +103,21 @@ export class UsersController {
     return this.usersService.userAssignedModules(req.user.userId);
   }
 
+  @Get('/user-details/:id')
+  @UseGuards(RolesGuard)
+  @Roles('TEAM_LEAD', 'MANAGER')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get user details by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully fetched user details',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  userDetails(@Param('id') id: string) {
+    return this.usersService.userDetails(Number(id));
+  }
+
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Retrieve a user by ID' })

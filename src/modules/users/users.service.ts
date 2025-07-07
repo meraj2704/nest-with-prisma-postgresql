@@ -231,4 +231,102 @@ export class UsersService {
       data: modules.assignedModules,
     };
   }
+
+  async userDetails(id: number) {
+    console.log('id', id);
+    await this.validator.validateUserExist(id);
+    const user = await this.prisma.user.findUnique({
+      where: { id: id },
+      select: {
+        id: true,
+        username: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        Department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        projects: {
+          select: {
+            id: true,
+            name: true,
+            completed: true,
+          },
+          orderBy: [
+            {
+              createdAt: 'desc',
+            },
+          ],
+        },
+        assignedModules: {
+          select: {
+            id: true,
+            name: true,
+            completed: true,
+          },
+          orderBy: [
+            {
+              createdAt: 'desc',
+            },
+          ],
+        },
+        assignedTasks: {
+          select: {
+            id: true,
+            title: true,
+            completed: true,
+          },
+          orderBy: [
+            {
+              createdAt: 'desc',
+            },
+          ],
+        },
+        workSessions: {
+          select: {
+            id: true,
+            start: true,
+            end: true,
+            durationMinutes: true,
+            summary: true,
+            progress: true,
+            project: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            module: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            Task: {
+              select: {
+                id: true,
+                title: true,
+              },
+            },
+          },
+          orderBy: [
+            {
+              end: 'desc',
+            },
+          ],
+        },
+      },
+    });
+
+    return {
+      message: 'Successfully fetched user details',
+      data: user,
+    };
+  }
 }
