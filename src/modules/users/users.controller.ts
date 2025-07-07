@@ -71,6 +71,38 @@ export class UsersController {
     return this.usersService.usersAsTeam(req.user.departmentId);
   }
 
+  @Get('/assigned-projects')
+  @UseGuards(RolesGuard)
+  @Roles('TEAM_LEAD', 'MANAGER', 'DEVELOPER')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get assigned projects for a user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully fetched user projects',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  userAssignedProjects(@Request() req) {
+    console.log('user id', req.user.userId);
+    return this.usersService.userAssignedProjects(req.user.userId);
+  }
+
+  @Get('/assigned-modules')
+  @UseGuards(RolesGuard)
+  @Roles('TEAM_LEAD', 'MANAGER', 'DEVELOPER')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get assigned modules for a user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully fetched user modules',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  userAssignedModules(@Request() req) {
+    console.log('user id', req.user.userId);
+    return this.usersService.userAssignedModules(req.user.userId);
+  }
+
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Retrieve a user by ID' })

@@ -48,18 +48,121 @@ export class ModuleService {
   }
 
   async findAll() {
-    const modules = await this.prisma.module.findMany();
+    const modules = await this.prisma.module.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        type: true,
+        priority: true,
+        buildTime: true,
+        bufferTime: true,
+        startDate: true,
+        endDate: true,
+        estimatedHours: true,
+        departmentId: true,
+        projectId: true,
+        completed: true,
+        progress: true,
+
+        _count: {
+          select: {
+            assignedDevelopers: true,
+          },
+        },
+        tasks: {
+          select: {
+            id: true,
+            completed: true,
+          },
+        },
+      },
+    });
+
+    const newData = modules.map(({ _count, tasks, ...otherData }) => {
+      return {
+        ...otherData,
+        member: _count.assignedDevelopers,
+        totalTasks: tasks.length,
+        completedTasks: tasks.filter((task) => task.completed).length,
+      };
+    });
     return {
       message: 'Modules found',
-      data: modules,
+      data: newData,
     };
   }
 
   async findOne(id: number) {
-    const module = await this.validator.validateModuleExists(id);
+    const module = await this.prisma.module.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        type: true,
+        priority: true,
+        buildTime: true,
+        bufferTime: true,
+        startDate: true,
+        endDate: true,
+        estimatedHours: true,
+        departmentId: true,
+        projectId: true,
+        completed: true,
+        progress: true,
+        assignedDevelopers: {
+          select: {
+            id: true,
+            fullName: true,
+            role: true,
+          },
+        },
+        tasks: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            type: true,
+            priority: true,
+            dueDate: true,
+            progress: true,
+            totalWorkHours: true,
+            estimatedHours: true,
+            completed: true,
+            startedAt: true,
+            status: true,
+            project: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            assignedUser: {
+              select: {
+                id: true,
+                fullName: true,
+                role: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    const { assignedDevelopers, tasks, ...otherData } = module;
+
+    const newData = {
+      totalTasks: tasks.length,
+      completedTasks: tasks.filter((task) => task.completed).length,
+      member: assignedDevelopers.length,
+      tasks: tasks,
+      assignedDevelopers: assignedDevelopers,
+      ...otherData,
+    };
+
     return {
       message: 'Module found',
-      data: module,
+      data: newData,
     };
   }
   async findByProjectId(id: number) {

@@ -385,4 +385,51 @@ export class TaskService {
       data: tasks,
     };
   }
+
+  // *************************************
+  // ************ My TASK *************
+  // *************************************
+
+  async myCompletedTask(id: number) {
+    await this.validator.validateUserExist(id);
+    const tasks = await this.prisma.task.findMany({
+      where: { assignedUserId: id, completed: true },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        project: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        module: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        status: true,
+        priority: true,
+        type: true,
+        dueDate: true,
+        progress: true,
+        estimatedHours: true,
+        totalWorkHours: true,
+      },
+      orderBy: [
+        {
+          status: 'desc',
+        },
+        {
+          dueDate: 'asc',
+        },
+      ],
+    });
+    return {
+      message: 'Completed Tasks fetched successfully',
+      data: tasks,
+    };
+  }
 }

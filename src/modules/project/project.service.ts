@@ -133,6 +133,13 @@ export class ProjectService {
                 assignedDevelopers: true,
               },
             },
+            assignedDevelopers: {
+              select: {
+                id: true,
+                fullName: true,
+                role: true,
+              },
+            },
             tasks: {
               select: {
                 id: true,

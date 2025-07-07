@@ -1,3 +1,4 @@
+import { Validator } from './../../common/validation/validator.service';
 import {
   ConflictException,
   Injectable,
@@ -12,7 +13,8 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UsersService {
   constructor(
-    private prisma: PrismaService, // Assuming PrismaService is injected for database operations
+    private prisma: PrismaService,
+    private validator: Validator,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -187,6 +189,46 @@ export class UsersService {
     return {
       message: 'Successfully fetched team members',
       data: dataFormat,
+    };
+  }
+  async userAssignedProjects(id: number) {
+    console.log('id', id);
+    await this.validator.validateUserExist(id);
+    const projects = await this.prisma.user.findUnique({
+      where: { id: id },
+      select: {
+        projects: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    return {
+      message: 'Successfully fetched user projects',
+      data: projects.projects,
+    };
+  }
+  async userAssignedModules(id: number) {
+    console.log('id', id);
+    await this.validator.validateUserExist(id);
+    const modules = await this.prisma.user.findUnique({
+      where: { id: id },
+      select: {
+        assignedModules: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    return {
+      message: 'Successfully fetched user modules',
+      data: modules.assignedModules,
     };
   }
 }

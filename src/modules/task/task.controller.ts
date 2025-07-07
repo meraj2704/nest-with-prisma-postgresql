@@ -189,7 +189,7 @@ export class TaskController {
   }
 
   // *************************************
-  // ************ My TASK TASK *************
+  // ************ My Completed TASK *************
   // *************************************
   @Get('my/tasks')
   @ApiOperation({ summary: 'My tasks' })
@@ -203,5 +203,23 @@ export class TaskController {
   })
   myTask(@Request() req) {
     return this.taskService.myTask(req.user.userId);
+  }
+
+  // *************************************
+  // ************ My Completed TASK *************
+  // *************************************
+
+  @Get('my/completed-tasks')
+  @ApiOperation({ summary: 'My tasks' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Task successfully fetched',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User not exist',
+  })
+  myCompletedTask(@Request() req) {
+    return this.taskService.myCompletedTask(req.user.userId);
   }
 }
