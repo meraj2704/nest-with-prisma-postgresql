@@ -21,7 +21,7 @@ import { ChangePasswordDto } from './dto/password.dto';
 import { GetUser } from 'src/common/decorators/user.decorator';
 
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RegisterDto } from './dto/register.dto';
+// import { RegisterDto } from './dto/register.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -42,15 +42,15 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @Post('register')
-  @ApiOperation({ summary: 'User Registration' })
-  @ApiBody({ type: RegisterDto })
-  @ApiResponse({ status: 201, description: 'User registered successfully' })
-  @ApiResponse({ status: 400, description: 'Bad Request' })
-  @ApiResponse({ status: 409, description: 'Conflict - User already exists' })
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
-  }
+  // @Post('register')
+  // @ApiOperation({ summary: 'User Registration' })
+  // @ApiBody({ type: RegisterDto })
+  // @ApiResponse({ status: 201, description: 'User registered successfully' })
+  // @ApiResponse({ status: 400, description: 'Bad Request' })
+  // @ApiResponse({ status: 409, description: 'Conflict - User already exists' })
+  // async register(@Body() registerDto: RegisterDto) {
+  //   return this.authService.register(registerDto);
+  // }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
