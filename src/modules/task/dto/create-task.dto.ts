@@ -9,7 +9,7 @@ import {
   IsPositive,
   IsString,
 } from 'class-validator';
-import { Priority, TaskType } from 'generated/prisma';
+import { Priority, TaskType } from '../../../../generated/prisma';
 
 export class CreateTaskDto {
   @ApiProperty({

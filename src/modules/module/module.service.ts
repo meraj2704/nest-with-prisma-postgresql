@@ -7,7 +7,7 @@ import {
 import { CreateModuleDto } from './dto/create-module.dto';
 import { UpdateModuleDto } from './dto/update-module.dto';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
+import { PrismaClientKnownRequestError } from '../../../generated/prisma/runtime/library';
 
 @Injectable()
 export class ModuleService {

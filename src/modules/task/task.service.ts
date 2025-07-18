@@ -12,7 +12,7 @@ import { PrismaService } from '../../../src/prisma/prisma.service';
 import { ProgressService } from '../../../src/common/services/progress.service';
 
 import { Validator } from '../../../src/common/validation/validator.service';
-import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
+import { PrismaClientKnownRequestError } from '../../../generated/prisma/runtime/library';
 
 @Injectable()
 export class TaskService {

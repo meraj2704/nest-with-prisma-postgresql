@@ -9,7 +9,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Priority, ProjectType } from 'generated/prisma';
+import { Priority, ProjectType } from '../../../../generated/prisma';
 
 export class UpdateProjectDto extends PartialType(CreateProjectDto) {
   @ApiPropertyOptional({

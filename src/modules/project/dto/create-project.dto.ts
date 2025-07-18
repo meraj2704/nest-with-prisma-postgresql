@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { Priority, ProjectType } from 'generated/prisma';
+import { Priority, ProjectType } from '../../../../generated/prisma';
 import { Type } from 'class-transformer';
 import { IsDate } from 'class-validator';
 
