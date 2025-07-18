@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Validator } from 'src/common/validation/validator.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Validator } from '../../../src/common/validation/validator.service';
+import { PrismaService } from '../../../src/prisma/prisma.service';
 
 @Injectable()
 export class DashboardService {

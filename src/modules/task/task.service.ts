@@ -8,10 +8,10 @@ import {
 } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ProgressService } from 'src/common/services/progress.service';
+import { PrismaService } from '../../../src/prisma/prisma.service';
+import { ProgressService } from '../../../src/common/services/progress.service';
 
-import { Validator } from 'src/common/validation/validator.service';
+import { Validator } from '../../../src/common/validation/validator.service';
 import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 
 @Injectable()
