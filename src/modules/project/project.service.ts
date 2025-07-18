@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { Validator } from '../../../src/common/validation/validator.service';
-import { PrismaClientKnownRequestError } from '../../../generated/prisma/runtime/library';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Validator } from 'src/common/validation/validator.service';
+import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 
 @Injectable()
 export class ProjectService {

@@ -18,7 +18,7 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto, TokensDto } from './dto/tokens.dto';
 
 import { ChangePasswordDto } from './dto/password.dto';
-import { GetUser } from '../../../src/common/decorators/user.decorator';
+import { GetUser } from 'src/common/decorators/user.decorator';
 
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 // import { RegisterDto } from './dto/register.dto';
