@@ -13,15 +13,16 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
-import { RefreshTokenDto, TokensDto } from './dto/tokens.dto';
+import { AuthService } from './auth.service.js';
+import { LoginDto } from './dto/login.dto.js';
+import { RefreshTokenDto, TokensDto } from './dto/tokens.dto.js';
 
-import { ChangePasswordDto } from './dto/password.dto';
-import { GetUser } from 'src/common/decorators/user.decorator';
+import { ChangePasswordDto } from './dto/password.dto.js';
+import { GetUser } from '../../common/decorators/get-user.decorator.js';
+import type { AuthUser } from '../../common/decorators/get-user.decorator.js';
 
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-// import { RegisterDto } from './dto/register.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
+// import { RegisterDto } from './dto/register.dto.js';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -67,7 +68,7 @@ export class AuthController {
   }
 
   @Post('change-password')
-  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Change User Password' })
@@ -76,7 +77,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
-    @GetUser() user: any,
+    @GetUser() user: AuthUser,
   ) {
     return this.authService.changePassword({
       email: user.email,

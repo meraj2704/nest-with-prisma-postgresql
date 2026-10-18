@@ -1,5 +1,5 @@
 import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { CreateProjectDto } from './create-project.dto';
+import { CreateProjectDto } from './create-project.dto.js';
 import {
   IsEnum,
   IsString,
@@ -9,7 +9,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Priority, ProjectType } from '../../../../generated/prisma';
+import { Priority, ProjectType } from '@prisma/client';
 
 export class UpdateProjectDto extends PartialType(CreateProjectDto) {
   @ApiPropertyOptional({

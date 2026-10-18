@@ -5,7 +5,7 @@ import {
   NotFoundException,
   PreconditionFailedException,
 } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service.js';
 
 @Injectable()
 export class Validator {
@@ -102,7 +102,7 @@ export class Validator {
     });
 
     if (!existingUser) {
-      throw new NotFoundException(`The following user were not found}`);
+      throw new NotFoundException(`User with ID ${userId} not found`);
     }
   }
 

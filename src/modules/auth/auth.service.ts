@@ -4,25 +4,24 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
+import { UsersRepository } from '../users/users.repository.js';
+import { LoginDto } from './dto/login.dto.js';
+import { RegisterDto } from './dto/register.dto.js';
+
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
+    private readonly usersRepository: UsersRepository,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async validateUser(email: string, password: string) {
+    const user = await this.usersRepository.findByEmail(email);
     if (user && (await bcrypt.compare(password, user.password))) {
-      // Exclude password from the returned user object
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...result } = user;
-      return result;
+      return this.withoutPassword(user);
     }
     return null;
   }
@@ -32,58 +31,95 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const tokens = this.generateTokens(user);
     return {
       message: 'Login successful',
       data: {
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
+        ...this.generateTokens(user),
         user,
       },
     };
   }
 
   async register(registerDto: RegisterDto) {
-    const existingUser = await this.prisma.user.findFirst({
-      where: {
-        OR: [{ email: registerDto.email }, { username: registerDto.username }],
-      },
-    });
+    const existingUser = await this.usersRepository.findByEmailOrUsername(
+      registerDto.email,
+      registerDto.username,
+    );
     if (existingUser) {
-      console.log('existingUser', existingUser);
-      console.log('registerDto', registerDto);
       if (existingUser.email === registerDto.email) {
         throw new ConflictException('User with this email already exists');
       }
-      if (existingUser.username === registerDto.username) {
-        throw new ConflictException('User with this username already exists');
-      }
+      throw new ConflictException('User with this username already exists');
     }
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    const user = await this.prisma.user.create({
-      data: {
-        username: registerDto.username,
-        fullName: registerDto.full_name,
-        email: registerDto.email,
-        phone: registerDto.phone,
-        password: hashedPassword,
-        departmentId: 1
-      },
+    const user = await this.usersRepository.create({
+      username: registerDto.username,
+      fullName: registerDto.full_name,
+      email: registerDto.email,
+      phone: registerDto.phone,
+      password: hashedPassword,
+      Department: { connect: { id: 1 } },
     });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
-    const tokens = this.generateTokens(user);
     return {
       message: 'User registered successfully',
       data: {
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        user: userWithoutPassword,
+        ...this.generateTokens(user),
+        user: this.withoutPassword(user),
       },
     };
   }
 
-  private generateTokens(user: any) {
+  async refreshToken(token: string) {
+    let decoded: { sub: number };
+    try {
+      decoded = this.jwtService.verify(token);
+    } catch {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    const user = await this.usersRepository.findById(decoded.sub);
+    if (!user) {
+      throw new UnauthorizedException('Invalid token');
+    }
+    return {
+      message: 'Tokens refreshed successfully',
+      data: {
+        ...this.generateTokens(user),
+        user: this.withoutPassword(user),
+      },
+    };
+  }
+
+  async changePassword(dto: {
+    email: string;
+    currentPassword: string;
+    newPassword: string;
+  }) {
+    const user = await this.usersRepository.findByEmail(dto.email);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const passwordMatch = await bcrypt.compare(
+      dto.currentPassword,
+      user.password,
+    );
+    if (!passwordMatch) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    await this.usersRepository.update(user.id, {
+      password: await bcrypt.hash(dto.newPassword, 10),
+    });
+
+    return {
+      message: 'Password changed successfully',
+    };
+  }
+
+  private generateTokens(
+    user: Pick<User, 'id' | 'email' | 'username' | 'role' | 'departmentId'>,
+  ) {
     const payload = {
       email: user.email,
       sub: user.id,
@@ -97,70 +133,8 @@ export class AuthService {
     };
   }
 
-  async refreshToken(token: string) {
-    console.log('token', token);
-    try {
-      const decoded = this.jwtService.verify(token);
-      console.log('decoded', decoded);
-      const user = await this.prisma.user.findUnique({
-        where: { id: decoded.sub },
-      });
-      console.log('user', user);
-      if (!user) {
-        throw new BadRequestException('User not found');
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...userWithoutPassword } = user;
-      const tokens = this.generateTokens(user);
-      return {
-        message: 'Tokens refreshed successfully',
-        data: {
-          ...tokens,
-          user: userWithoutPassword,
-        },
-      };
-    } catch {
-      throw new UnauthorizedException('Invalid token');
-    }
-  }
-
-  async changePassword(changePasswordDto: {
-    email: string;
-    currentPassword: string;
-    newPassword: string;
-  }) {
-    // const user = await this.validateUser(
-    //   changePasswordDto.email,
-    //   changePasswordDto.currentPassword,
-    // );
-
-    const user = await this.prisma.user.findUnique({
-      where: { email: changePasswordDto.email },
-    });
-
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-
-    const passwordMatch = await bcrypt.compare(
-      changePasswordDto.currentPassword,
-      user.password,
-    );
-    if (!passwordMatch) {
-      throw new UnauthorizedException('Current password is incorrect');
-    }
-
-    const hashedNewPassword = await bcrypt.hash(
-      changePasswordDto.newPassword,
-      10,
-    );
-    await this.prisma.user.update({
-      where: { email: changePasswordDto.email },
-      data: { password: hashedNewPassword },
-    });
-
-    return {
-      message: 'Password changed successfully',
-    };
+  private withoutPassword(user: User) {
+    const { password: _password, ...rest } = user;
+    return rest;
   }
 }

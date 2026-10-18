@@ -1,13 +1,10 @@
-// schema.prisma
 generator client {
-  provider        = "prisma-client-js"
-  output          = "../generated/prisma/"
-  previewFeatures = ["fullTextSearch", "filterJson"]
+  provider = "prisma-client-js"
 }
 
+// Connection URL lives in prisma.config.ts (CLI) and PrismaService (runtime adapter)
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum UserRole {

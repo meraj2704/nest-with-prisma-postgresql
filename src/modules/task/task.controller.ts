@@ -7,23 +7,26 @@ import {
   Param,
   Delete,
   HttpStatus,
-  Request,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { TaskService } from './task.service';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
+import { TaskService } from './task.service.js';
+import { CreateTaskDto } from './dto/create-task.dto.js';
+import { UpdateTaskDto } from './dto/update-task.dto.js';
 import {
   ApiBearerAuth,
+  ApiTags,
   ApiBody,
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
-import { EndTaskDto } from './dto/end-task.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { EndTaskDto } from './dto/end-task.dto.js';
+import { GetUser } from '../../common/decorators/get-user.decorator.js';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 
+@ApiTags('Tasks')
 @Controller('task')
-@ApiBearerAuth('access-token')
+@ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
@@ -83,9 +86,8 @@ export class TaskController {
     type: CreateTaskDto,
   })
   @ApiResponse({ status: 404, description: 'Task not found.' })
-  findOne(@Param('id') id: string) {
-    console.log('find here');
-    return this.taskService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.taskService.findOne(id);
   }
 
   // *********************************************
@@ -100,8 +102,8 @@ export class TaskController {
   })
   @ApiResponse({ status: 404, description: 'Task not found.' })
   @ApiResponse({ status: 404, description: 'Project not found by id' })
-  findByProjectId(@Param('id') id: string) {
-    return this.taskService.findByProjectId(+id);
+  findByProjectId(@Param('id', ParseIntPipe) id: number) {
+    return this.taskService.findByProjectId(id);
   }
 
   // *********************************************
@@ -116,8 +118,8 @@ export class TaskController {
   })
   @ApiResponse({ status: 404, description: 'Module not found.' })
   @ApiResponse({ status: 404, description: 'Project not found by id' })
-  findByModuleId(@Param('id') id: string) {
-    return this.taskService.findByModuleId(+id);
+  findByModuleId(@Param('id', ParseIntPipe) id: number) {
+    return this.taskService.findByModuleId(id);
   }
 
   // *************************************
@@ -131,8 +133,11 @@ export class TaskController {
     type: CreateTaskDto,
   })
   @ApiResponse({ status: 404, description: 'Task not found.' })
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-    return this.taskService.update(+id, updateTaskDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateTaskDto: UpdateTaskDto,
+  ) {
+    return this.taskService.update(id, updateTaskDto);
   }
 
   // *************************************
@@ -142,8 +147,8 @@ export class TaskController {
   @ApiOperation({ summary: 'Remove a task by ID' })
   @ApiResponse({ status: 200, description: 'Task successfully removed.' })
   @ApiResponse({ status: 404, description: 'Task not found.' })
-  remove(@Param('id') id: string) {
-    return this.taskService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.taskService.remove(id);
   }
 
   // *************************************
@@ -163,7 +168,7 @@ export class TaskController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Task already complete',
   })
-  start(@Param('id') id: number) {
+  start(@Param('id', ParseIntPipe) id: number) {
     return this.taskService.startTask(id);
   }
 
@@ -184,8 +189,12 @@ export class TaskController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Task already complete',
   })
-  end(@Param('id') id: number, @Body() endTaskDto: EndTaskDto) {
-    return this.taskService.endTask(id, endTaskDto);
+  end(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() endTaskDto: EndTaskDto,
+    @GetUser('userId') userId: number,
+  ) {
+    return this.taskService.endTask(id, endTaskDto, userId);
   }
 
   // *************************************
@@ -201,8 +210,8 @@ export class TaskController {
     status: HttpStatus.NOT_FOUND,
     description: 'User not exist',
   })
-  myTask(@Request() req) {
-    return this.taskService.myTask(req.user.userId);
+  myTask(@GetUser('userId') userId: number) {
+    return this.taskService.myTask(userId);
   }
 
   // *************************************
@@ -219,7 +228,7 @@ export class TaskController {
     status: HttpStatus.NOT_FOUND,
     description: 'User not exist',
   })
-  myCompletedTask(@Request() req) {
-    return this.taskService.myCompletedTask(req.user.userId);
+  myCompletedTask(@GetUser('userId') userId: number) {
+    return this.taskService.myCompletedTask(userId);
   }
 }

@@ -7,7 +7,7 @@ import {
   IsPositive,
   IsString,
 } from 'class-validator';
-import { ModuleType, Priority } from '../../../../generated/prisma';
+import { ModuleType, Priority } from '@prisma/client';
 
 export class UpdateModuleDto {
   @ApiPropertyOptional({

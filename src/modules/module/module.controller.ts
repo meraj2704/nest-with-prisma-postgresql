@@ -8,10 +8,11 @@ import {
   Delete,
   HttpStatus,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { ModuleService } from './module.service';
-import { CreateModuleDto } from './dto/create-module.dto';
-import { UpdateModuleDto } from './dto/update-module.dto';
+import { ModuleService } from './module.service.js';
+import { CreateModuleDto } from './dto/create-module.dto.js';
+import { UpdateModuleDto } from './dto/update-module.dto.js';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -21,13 +22,13 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorator/roles.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 
 @ApiTags('Module')
 @Controller('module')
-@ApiBearerAuth('access-token')
+@ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
 export class ModuleController {
   constructor(private readonly moduleService: ModuleService) {}
@@ -64,8 +65,8 @@ export class ModuleController {
     description: 'Module details',
     type: CreateModuleDto,
   })
-  async findOne(@Param('id') id: string) {
-    return await this.moduleService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return await this.moduleService.findOne(id);
   }
 
   @Get('by-project/:id')
@@ -78,8 +79,8 @@ export class ModuleController {
     status: HttpStatus.NOT_FOUND,
     description: 'Project not found by this id',
   })
-  async findByProjectId(@Param('id') id: string) {
-    return await this.moduleService.findByProjectId(+id);
+  async findByProjectId(@Param('id', ParseIntPipe) id: number) {
+    return await this.moduleService.findByProjectId(id);
   }
 
   @Patch(':id')
@@ -90,10 +91,10 @@ export class ModuleController {
     type: CreateModuleDto,
   })
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateModuleDto: UpdateModuleDto,
   ) {
-    return await this.moduleService.update(+id, updateModuleDto);
+    return await this.moduleService.update(id, updateModuleDto);
   }
 
   @Delete(':id')
@@ -102,8 +103,8 @@ export class ModuleController {
     status: 200,
     description: 'Module successfully deleted',
   })
-  remove(@Param('id') id: string) {
-    return this.moduleService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.moduleService.remove(id);
   }
 
   @Get('assign-developers/:id')
@@ -114,7 +115,7 @@ export class ModuleController {
     status: 200,
     description: 'Module successfully deleted',
   })
-  assignedDevelopers(@Param('id') id: string) {
-    return this.moduleService.assignedDevelopers(+id);
+  assignedDevelopers(@Param('id', ParseIntPipe) id: number) {
+    return this.moduleService.assignedDevelopers(id);
   }
 }

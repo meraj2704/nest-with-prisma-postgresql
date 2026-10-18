@@ -7,10 +7,11 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { ProjectService } from './project.service';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
+import { ProjectService } from './project.service.js';
+import { CreateProjectDto } from './dto/create-project.dto.js';
+import { UpdateProjectDto } from './dto/update-project.dto.js';
 import {
   ApiTags,
   ApiOperation,
@@ -22,13 +23,13 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorator/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../../common/guards/roles.guard.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
 
 @ApiTags('Projects')
 @Controller('project')
-@ApiBearerAuth('access-token')
+@ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
@@ -68,8 +69,8 @@ export class ProjectController {
     type: CreateProjectDto,
   })
   @ApiNotFoundResponse({ description: 'Project not found' })
-  async findOne(@Param('id') id: string) {
-    return await this.projectService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return await this.projectService.findOne(id);
   }
 
   @Patch(':id')
@@ -88,10 +89,10 @@ export class ProjectController {
   @ApiNotFoundResponse({ description: 'Project not found' })
   @ApiBadRequestResponse({ description: 'Invalid input data' })
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateProjectDto: UpdateProjectDto,
   ) {
-    return await this.projectService.update(+id, updateProjectDto);
+    return await this.projectService.update(id, updateProjectDto);
   }
 
   @Delete(':id')
@@ -106,8 +107,8 @@ export class ProjectController {
   })
   @ApiOkResponse({ description: 'Project deleted successfully' })
   @ApiNotFoundResponse({ description: 'Project not found' })
-  async remove(@Param('id') id: string) {
-    return await this.projectService.remove(+id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.projectService.remove(id);
   }
 
   @Get('project-members/:id')
@@ -120,7 +121,7 @@ export class ProjectController {
   })
   @ApiOkResponse({ description: 'Fetched all members for this project' })
   @ApiNotFoundResponse({ description: 'Project not found' })
-  async projectMembers(@Param('id') id: string) {
-    return await this.projectService.projectMembers(+id);
+  async projectMembers(@Param('id', ParseIntPipe) id: number) {
+    return await this.projectService.projectMembers(id);
   }
 }

@@ -1,52 +1,52 @@
 import {
-  Controller,
-  Get,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
-  UseGuards,
+  Param,
+  ParseIntPipe,
+  Patch,
   Post,
-  Request,
+  UseGuards,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto/update-user.dto';
 import {
   ApiBearerAuth,
-  // ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
-import { AllUserDto } from './dto/all-user.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorator/roles.decorator';
-import { CreateUserDto } from './dto/create-user.dto';
-// import { Roles } from '../auth/decorator/roles.decorator';
+import { UserRole } from '@prisma/client';
+import { GetUser } from '../../common/decorators/get-user.decorator.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
+import { RolesGuard } from '../../common/guards/roles.guard.js';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { AllUserDto } from './dto/all-user.dto.js';
+import { CreateUserDto } from './dto/create-user.dto.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
+import { UsersService } from './users.service.js';
 
+@ApiTags('Users')
+@ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
-@ApiBearerAuth('access-token')
-@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('create')
-  @UseGuards(RolesGuard)
-  @Roles('MANAGER', 'TEAM_LEAD')
-  @ApiOperation({ summary: 'User Registration' })
+  @Roles(UserRole.MANAGER, UserRole.TEAM_LEAD)
+  @ApiOperation({ summary: 'Create a user' })
   @ApiBody({ type: CreateUserDto })
-  @ApiResponse({ status: 201, description: 'User Created successfully' })
+  @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 409, description: 'Conflict - User already exists' })
-  async register(@Body() createUserDto: CreateUserDto) {
+  register(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
-  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Retrieve all users' })
   @ApiResponse({
     status: 200,
@@ -59,54 +59,44 @@ export class UsersController {
   }
 
   @Get('team-members')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Retrieve all users' })
+  @ApiOperation({ summary: "Retrieve the current user's department team" })
   @ApiResponse({
     status: 200,
-    description: 'Users retrieved successfully',
-    type: [AllUserDto],
+    description: 'Successfully fetched team members',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  usersAsTeamMembers(@Request() req) {
-    return this.usersService.usersAsTeam(req.user.departmentId);
+  usersAsTeamMembers(@GetUser('departmentId') departmentId: number) {
+    return this.usersService.usersAsTeam(departmentId);
   }
 
-  @Get('/assigned-projects')
-  @UseGuards(RolesGuard)
-  @Roles('TEAM_LEAD', 'MANAGER', 'DEVELOPER')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get assigned projects for a user' })
+  @Get('assigned-projects')
+  @Roles(UserRole.TEAM_LEAD, UserRole.MANAGER, UserRole.DEVELOPER)
+  @ApiOperation({ summary: 'Get assigned projects for the current user' })
   @ApiResponse({
     status: 200,
     description: 'Successfully fetched user projects',
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  userAssignedProjects(@Request() req) {
-    console.log('user id', req.user.userId);
-    return this.usersService.userAssignedProjects(req.user.userId);
+  userAssignedProjects(@GetUser('userId') userId: number) {
+    return this.usersService.userAssignedProjects(userId);
   }
 
-  @Get('/assigned-modules')
-  @UseGuards(RolesGuard)
-  @Roles('TEAM_LEAD', 'MANAGER', 'DEVELOPER')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get assigned modules for a user' })
+  @Get('assigned-modules')
+  @Roles(UserRole.TEAM_LEAD, UserRole.MANAGER, UserRole.DEVELOPER)
+  @ApiOperation({ summary: 'Get assigned modules for the current user' })
   @ApiResponse({
     status: 200,
     description: 'Successfully fetched user modules',
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  userAssignedModules(@Request() req) {
-    console.log('user id', req.user.userId);
-    return this.usersService.userAssignedModules(req.user.userId);
+  userAssignedModules(@GetUser('userId') userId: number) {
+    return this.usersService.userAssignedModules(userId);
   }
 
-  @Get('/user-details/:id')
-  @UseGuards(RolesGuard)
-  @Roles('TEAM_LEAD', 'MANAGER')
-  @HttpCode(HttpStatus.OK)
+  @Get('user-details/:id')
+  @Roles(UserRole.TEAM_LEAD, UserRole.MANAGER)
   @ApiOperation({ summary: 'Get user details by ID' })
   @ApiResponse({
     status: 200,
@@ -114,12 +104,11 @@ export class UsersController {
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  userDetails(@Param('id') id: string) {
-    return this.usersService.userDetails(Number(id));
+  userDetails(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.userDetails(id);
   }
 
   @Get(':id')
-  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Retrieve a user by ID' })
   @ApiResponse({
     status: 200,
@@ -128,12 +117,11 @@ export class UsersController {
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findOne(id);
   }
 
   @Patch(':id')
-  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update a user by ID' })
   @ApiBody({ type: UpdateUserDto })
   @ApiResponse({
@@ -143,22 +131,21 @@ export class UsersController {
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
-  @UseGuards(RolesGuard)
-  @Roles('TEAM_LEAD', 'MANAGER')
+  @Roles(UserRole.TEAM_LEAD, UserRole.MANAGER)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete a user by ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'User removed successfully',
-  })
+  @ApiResponse({ status: 200, description: 'User removed successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.remove(id);
   }
 }

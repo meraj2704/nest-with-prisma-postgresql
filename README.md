@@ -1,99 +1,221 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Team Task Management Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A NestJS + Prisma API for running software teams: departments plan **projects**, split them into
+**modules**, assign **tasks** to developers, and track time through **work sessions**. Progress
+rolls up automatically from tasks to modules to projects, and each role gets its own dashboard.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tech stack
 
-## Description
+- **NestJS 11** (Express), ESM (`"type": "module"`)
+- **Prisma 7** + **PostgreSQL** via the `@prisma/adapter-pg` driver adapter
+- **JWT** auth (`passport-jwt`) with role-based access control
+- **Swagger** API docs (development only)
+- **Winston** logging, **helmet**, **compression**, **@nestjs/throttler** rate limiting
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Domain model
 
-## Project setup
-
-```bash
-$ yarn install
+```
+Department ─┬─ User (DEVELOPER | TEAM_LEAD | MANAGER)
+            └─ Project ── Module ── Task ── WorkSession
 ```
 
-## Compile and run the project
+- A **work session** is recorded each time a developer starts and ends a task. Ending a task
+  stores the duration, a summary and the new progress percentage.
+- **Progress roll-up:** a module's progress is the average of its tasks; a project's progress is
+  the average of its modules. Either is marked `completed` at 100%.
+
+**Roles:** `DEVELOPER`, `TEAM_LEAD`, `MANAGER`.
+
+## Getting started
+
+### 1. Install dependencies
 
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+yarn install
 ```
 
-## Run tests
+`postinstall` runs `prisma generate`, so the Prisma client is ready afterwards.
+
+### 2. Configure environment
 
 ```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+cp .env.example .env
 ```
 
-## Deployment
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `DATABASE_URL` | yes | PostgreSQL connection string |
+| `JWT_SECRET` | yes | Signs access and refresh tokens |
+| `NODE_ENV` | no | `production` disables Swagger and hides 500 error details |
+| `PORT` | no | Defaults to `4001` |
+| `CORS_ORIGINS` | in production | Comma-separated browser origins allowed to call the API. Any `localhost` origin is allowed outside production |
+| `TRUST_PROXY_HOPS` | no | Number of reverse proxies in front of the app, so rate limiting sees real client IPs. Defaults to `1` on Vercel, `0` elsewhere |
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 3. Set up the database
 
 ```bash
-$ yarn install -g mau
-$ mau deploy
+npx prisma migrate deploy   # apply existing migrations
+# or, while changing the schema:
+npx prisma migrate dev --name <change>
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Prisma reads `DATABASE_URL` through `prisma.config.ts`.
 
-## Resources
+### 4. Run
 
-Check out a few resources that may come in handy when working with NestJS:
+```bash
+yarn start:dev
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- API: `http://localhost:4001/api/v1/...`
+- Swagger: `http://localhost:4001/api-docs`
+- Health check: `GET http://localhost:4001/`
 
-## Support
+## API conventions
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+**Authentication.** `POST /api/v1/auth/login` returns `access_token` (1 day) and
+`refresh_token` (7 days). Send `Authorization: Bearer <access_token>` on every other route.
 
-## Stay in touch
+**Success responses** are wrapped by `TransformInterceptor`:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```json
+{ "success": true, "statusCode": 200, "message": "Tasks successfully retrieved", "data": [] }
+```
 
-## License
+A service can return `{ message, data, meta }` to control the envelope; `meta` is included only
+when present (for paginated results).
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+**Error responses** come from `AllExceptionsFilter`. Prisma errors are mapped to HTTP codes:
+unique violation → `409`, missing related record → `400`, record not found → `404`.
+
+```json
+{ "success": false, "statusCode": 404, "path": "/api/v1/task/9", "error": "Not Found", "message": "Task with ID 9 not found", "timestamp": "..." }
+```
+
+**Rate limit:** 60 requests per minute per client IP.
+
+## Endpoints
+
+All paths are under `/api/v1`. Every route except `auth/login` and `auth/refresh` requires a
+JWT; the Roles column lists any extra restriction.
+
+| Method | Path | Roles |
+| --- | --- | --- |
+| POST | `/auth/login` | public |
+| POST | `/auth/refresh` | public |
+| POST | `/auth/change-password` | |
+| POST | `/users/create` | MANAGER, TEAM_LEAD |
+| GET | `/users` | |
+| GET | `/users/team-members` | |
+| GET | `/users/assigned-projects` | |
+| GET | `/users/assigned-modules` | |
+| GET | `/users/user-details/:id` | MANAGER, TEAM_LEAD |
+| GET / PATCH | `/users/:id` | |
+| DELETE | `/users/:id` | MANAGER, TEAM_LEAD |
+| POST | `/project/create` | |
+| GET | `/project/all` | |
+| GET / PATCH | `/project/:id` | |
+| DELETE | `/project/:id` | MANAGER, TEAM_LEAD |
+| GET | `/project/project-members/:id` | |
+| POST | `/module/create` | |
+| GET | `/module/all` | |
+| GET | `/module/by-project/:id` | |
+| GET / PATCH / DELETE | `/module/:id` | |
+| GET | `/module/assign-developers/:id` | MANAGER, TEAM_LEAD |
+| POST | `/task/create` | |
+| GET | `/task/all` | |
+| GET | `/task/management/dashboard` | |
+| GET | `/task/:id` | |
+| GET | `/task/by-project/:id` | |
+| GET | `/task/by-module/:id` | |
+| PATCH | `/task/update/:id` | |
+| DELETE | `/task/remove/:id` | |
+| POST | `/task/start/:id` | |
+| POST | `/task/end/:id` | |
+| GET | `/task/my/tasks` | |
+| GET | `/task/my/completed-tasks` | |
+| GET | `/dashboard/manager` | MANAGER |
+| GET | `/dashboard/team-lead` | TEAM_LEAD |
+| GET | `/dashboard/developer` | DEVELOPER |
+
+Request and response bodies are documented in Swagger.
+
+## Project structure
+
+```
+src/
+├── main.ts                  # bootstrap: prefix, CORS, helmet, pipes, filter, Swagger
+├── app.module.ts            # config, throttler, request logging
+├── prisma/                  # global PrismaService (pg driver adapter)
+├── core/logger/             # Winston configuration
+├── common/
+│   ├── common.module.ts     # global Validator + ProgressService
+│   ├── config/              # CORS allowlist
+│   ├── decorators/          # @GetUser, @Roles, @Public
+│   ├── filters/             # AllExceptionsFilter
+│   ├── guards/              # RolesGuard
+│   ├── interceptors/        # TransformInterceptor
+│   ├── middlewares/         # HTTP request logger
+│   ├── services/            # ProgressService (progress roll-up)
+│   └── validation/          # Validator (existence and state checks)
+└── modules/
+    └── <feature>/           # auth, users, project, module, task, dashboard
+        ├── dto/
+        ├── <feature>.controller.ts
+        ├── <feature>.service.ts      # business logic
+        └── <feature>.repository.ts   # all Prisma queries for the feature
+```
+
+Services never call Prisma directly; they go through their module's repository. Repository
+methods that take an optional `client` argument can run inside a transaction:
+
+```ts
+await this.repository.transaction(async (tx) => {
+  const task = await this.repository.remove(id, tx);
+  await this.progressService.updateModuleProgress(task.moduleId, tx);
+});
+```
+
+## Logging
+
+Winston writes to the console (human-readable in development, JSON in production) and, except
+on Vercel, to rotating files in `logs/`:
+
+- `logs/application-YYYY-MM-DD.log`: info and above, kept 14 days
+- `logs/error-YYYY-MM-DD.log`: errors only, kept 30 days
+
+Client errors (4xx) are logged as warnings; server errors (5xx) as errors with a stack trace.
+
+## Deploying to Vercel
+
+The project uses Vercel's zero-configuration NestJS support, so there is no `vercel.json`.
+Vercel detects `src/main.ts`, installs dependencies (which runs `prisma generate`) and deploys
+the app as a single function.
+
+1. Set `DATABASE_URL`, `JWT_SECRET` and `CORS_ORIGINS` in the Vercel project's environment
+   variables. Vercel sets `NODE_ENV=production`, which disables Swagger.
+2. Apply migrations against the production database before or after deploying. The Vercel build
+   does not run them:
+
+   ```bash
+   DATABASE_URL=<production url> npx prisma migrate deploy
+   ```
+
+Notes:
+
+- File logging is turned off on Vercel (read-only filesystem). Use Vercel's runtime logs.
+- Rate-limit counters are kept in memory per function instance.
+- `src/main.ts` casts the `helmet` import because Vercel's build type-checker resolves helmet's
+  CommonJS typings. Keep the cast if you touch that import.
+
+## Scripts
+
+| Script | Purpose |
+| --- | --- |
+| `yarn start:dev` | Run in watch mode |
+| `yarn build` | Generate the Prisma client and compile to `dist/` |
+| `yarn start:prod` | Run the compiled build |
+| `yarn lint` | ESLint with auto-fix |
+| `yarn format` | Prettier |
+| `yarn test` | Unit tests (Jest, ESM) |
+| `yarn test:e2e` | End-to-end tests (needs a reachable `DATABASE_URL`) |

@@ -1,5 +1,5 @@
-import { Controller, Get, Request, UseGuards } from '@nestjs/common';
-import { DashboardService } from './dashboard.service';
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { DashboardService } from './dashboard.service.js';
 import {
   ApiTags,
   ApiOperation,
@@ -12,16 +12,17 @@ import {
   DeveloperDashboardResponse,
   ManagerDashboardResponse,
   TeamLeadDashboardResponse,
-} from './dto/dashboard.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorator/roles.decorator';
+} from './dto/dashboard.dto.js';
+import { GetUser } from '../../common/decorators/get-user.decorator.js';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../../common/guards/roles.guard.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
 
 // Response DTOs
 
 @ApiTags('Dashboard')
 @Controller('dashboard')
-@ApiBearerAuth('access-token')
+@ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
@@ -66,8 +67,8 @@ export class DashboardController {
   @ApiForbiddenResponse({
     description: 'Forbidden - user does not have team lead privileges',
   })
-  teamLeadDashboard(@Request() req) {
-    return this.dashboardService.teamLeadDashboard(req.user.departmentId);
+  teamLeadDashboard(@GetUser('departmentId') departmentId: number) {
+    return this.dashboardService.teamLeadDashboard(departmentId);
   }
 
   @Get('developer')
@@ -85,7 +86,7 @@ export class DashboardController {
   @ApiUnauthorizedResponse({
     description: 'Unauthorized - valid authentication token required',
   })
-  developerDashboard(@Request() req) {
-    return this.dashboardService.developerDashboard(req.user.userId);
+  developerDashboard(@GetUser('userId') userId: number) {
+    return this.dashboardService.developerDashboard(userId);
   }
 }
